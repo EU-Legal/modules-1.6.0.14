@@ -21,7 +21,7 @@ class OrderDetail extends OrderDetailCore
 		* EU-Legal
 		* correct calculation of prices -> Problem with inaccuracy at high number of items 
 		*/
-		
+
 		// Nothing to save
 		if ($this->tax_calculator == null)
 			return true;
@@ -35,33 +35,49 @@ class OrderDetail extends OrderDetailCore
 		if ($order->total_products <= 0)
 			return true;
 
+		$shipping_tax_amount = 0;
+
+		foreach ($order->getCartRules() as $cart_rule)
+			if ($cart_rule['free_shipping'])
+			{
+				$shipping_tax_amount = $order->total_shipping_tax_excl;
+				break;
+			}
+
 		$ratio = $this->unit_price_tax_excl / $order->total_products;
-		$order_reduction_amount = $order->total_discounts_tax_excl * $ratio;
+		$order_reduction_amount = ($order->total_discounts_tax_excl - $shipping_tax_amount) * $ratio;
 		$discounted_price_tax_excl = $this->unit_price_tax_excl - $order_reduction_amount;
-		
+
 		$values = '';
 		foreach ($this->tax_calculator->getTaxesAmount($discounted_price_tax_excl) as $id_tax => $amount)
 		{
-			/*
-			* EU-Legal
-			* correct calculation of prices -> Problem with inaccuracy at high number of items 
-			*/
-			//don't round here
-			//$unit_amount = (float)Tools::ps_round($amount, 2);
-			$unit_amount = (float)$amount;
-			$total_amount = $unit_amount * $this->product_quantity;
-			$values .= '('.(int)$this->id.','.(float)$id_tax.','.$unit_amount.','.(float)$total_amount.'),';
+			switch (Configuration::get('PS_ROUND_TYPE'))
+			{
+				case Order::ROUND_ITEM:
+					$unit_amount = (float)Tools::ps_round($amount, _PS_PRICE_COMPUTE_PRECISION_);
+					$total_amount = $unit_amount * $this->product_quantity;
+					break;
+				case Order::ROUND_LINE:
+					$unit_amount = $amount;
+					$total_amount = Tools::ps_round($unit_amount * $this->product_quantity, _PS_PRICE_COMPUTE_PRECISION_);
+					break;
+				case Order::ROUND_TOTAL:
+					$unit_amount = $amount;
+					$total_amount = $unit_amount * $this->product_quantity;
+					break;
+			}
+
+			$values .= '('.(int)$this->id.','.(int)$id_tax.','.(float)$unit_amount.','.(float)$total_amount.'),';
 		}
 
 		if ($replace)
 			Db::getInstance()->execute('DELETE FROM `'._DB_PREFIX_.'order_detail_tax` WHERE id_order_detail='.(int)$this->id);
-			
+
 		$values = rtrim($values, ',');
 		$sql = 'INSERT INTO `'._DB_PREFIX_.'order_detail_tax` (id_order_detail, id_tax, unit_amount, total_amount)
 				VALUES '.$values;
-		
+
 		return Db::getInstance()->execute($sql);
-		
 	}
 	
 }

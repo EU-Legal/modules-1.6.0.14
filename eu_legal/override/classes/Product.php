@@ -55,17 +55,13 @@ class Product extends ProductCore
 		if (!in_array($context->controller->controller_type, array('front', 'modulefront')))
 			$front = false;
 
-		if ($page_number < 0)
-			$page_number = 0;
-		if ($nb_products < 1)
-			$nb_products = 10;
-		if (empty($order_by) || $order_by == 'position')
-			$order_by = 'date_add';
-		if (empty($order_way))
-			$order_way = 'DESC';
+		if ($page_number < 0) $page_number = 0;
+		if ($nb_products < 1) $nb_products = 10;
+		if (empty($order_by) || $order_by == 'position') $order_by = 'date_add';
+		if (empty($order_way)) $order_way = 'DESC';
 		if ($order_by == 'id_product' || $order_by == 'price' || $order_by == 'date_add' || $order_by == 'date_upd')
 			$order_by_prefix = 'p';
-		else if ($order_by == 'name')
+		elseif ($order_by == 'name')
 			$order_by_prefix = 'pl';
 		if (!Validate::isOrderBy($order_by) || !Validate::isOrderWay($order_way))
 			die(Tools::displayError());
@@ -110,7 +106,7 @@ class Product extends ProductCore
 		$sql->select(
 			'p.*, product_shop.*, stock.out_of_stock, IFNULL(stock.quantity, 0) as quantity, pl.`description`, pl.`description_short`, pl.`link_rewrite`, pl.`meta_description`,
 			pl.`meta_keywords`, pl.`meta_title`, pl.`name`, pl.`available_now`, pl.`available_later`, pl.`delivery_now`, pl.`delivery_later`, MAX(image_shop.`id_image`) id_image, il.`legend`, m.`name` AS manufacturer_name,
-			product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'" as new'
+			product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'" as new'.(Combination::isFeatureActive() ? ', MAX(product_attribute_shop.minimal_quantity) AS product_attribute_minimal_quantity' : '')
 		);
 
 		$sql->from('product', 'p');
@@ -129,12 +125,11 @@ class Product extends ProductCore
 			$sql->where('product_shop.`visibility` IN ("both", "catalog")');
 		$sql->where('product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'"');
 		if (Group::isFeatureActive())
-			$sql->where('p.`id_product` IN (
-				SELECT cp.`id_product`
-				FROM `'._DB_PREFIX_.'category_group` cg
-				LEFT JOIN `'._DB_PREFIX_.'category_product` cp ON (cp.`id_category` = cg.`id_category`)
-				WHERE cg.`id_group` '.$sql_groups.'
-			)');
+		{
+			$sql->join('JOIN '._DB_PREFIX_.'category_product cp ON (cp.id_product = p.id_product)');
+			$sql->join('JOIN '._DB_PREFIX_.'category_group cg ON (cg.id_category = cp.id_category)');
+			$sql->where('cg.`id_group` '.(count($groups) ? 'IN ('.implode(',', $groups).')' : '= 1'));
+		}
 		$sql->groupBy('product_shop.id_product');
 
 		$sql->orderBy((isset($order_by_prefix) ? pSQL($order_by_prefix).'.' : '').'`'.pSQL($order_by).'` '.pSQL($order_way));
@@ -183,7 +178,7 @@ class Product extends ProductCore
 		{
 			$ids_product = ' AND (';
 			foreach ($product_reductions as $product_reduction)
-				$ids_product .= '( product_shop.`id_product` = '.(int)$product_reduction['id_product'].($product_reduction['id_product_attribute'] ? ' AND product_attribute_shop.`id_product_attribute`='.(int)$product_reduction['id_product_attribute'] : '').') OR';
+				$ids_product .= '( product_shop.`id_product` = '.(int)$product_reduction['id_product'].($product_reduction['id_product_attribute'] ? ' AND product_attribute_shop.`id_product_attribute`='.(int)$product_reduction['id_product_attribute'] :'').') OR';
 			$ids_product = rtrim($ids_product, 'OR').')';
 
 			$groups = FrontController::getCurrentCustomerGroups();
@@ -216,6 +211,7 @@ class Product extends ProductCore
 			* EU-Legal
 			* get standard shipping time from database pl.
 			*/
+
 			$sql = 'SELECT p.*, product_shop.*, stock.`out_of_stock` out_of_stock, pl.`description`, pl.`description_short`,
 						pl.`link_rewrite`, pl.`meta_description`, pl.`meta_keywords`, pl.`meta_title`, pl.`name`, pl.`available_now`, pl.`available_later`, pl.`delivery_now`, pl.`delivery_later`,
 						p.`ean13`, p.`upc`, MAX(image_shop.`id_image`) id_image, il.`legend`,
@@ -247,7 +243,8 @@ class Product extends ProductCore
 			return false;
 	}
 
-	public static function getPricesDrop($id_lang, $page_number = 0, $nb_products = 10, $count = false, $order_by = null, $order_way = null, $beginning = false, $ending = false, Context $context = null)
+	public static function getPricesDrop($id_lang, $page_number = 0, $nb_products = 10, $count = false,
+	                                     $order_by = null, $order_way = null, $beginning = false, $ending = false, Context $context = null)
 	{
 		/*
 		* EU-Legal
@@ -256,19 +253,14 @@ class Product extends ProductCore
 		if (!Validate::isBool($count))
 			die(Tools::displayError());
 
-		if (!$context)
-			$context = Context::getContext();
-		if ($page_number < 0)
-			$page_number = 0;
-		if ($nb_products < 1)
-			$nb_products = 10;
-		if (empty($order_by) || $order_by == 'position')
-			$order_by = 'price';
-		if (empty($order_way))
-			$order_way = 'DESC';
+		if (!$context) $context = Context::getContext();
+		if ($page_number < 0) $page_number = 0;
+		if ($nb_products < 1) $nb_products = 10;
+		if (empty($order_by) || $order_by == 'position') $order_by = 'price';
+		if (empty($order_way)) $order_way = 'DESC';
 		if ($order_by == 'id_product' || $order_by == 'price' || $order_by == 'date_add' || $order_by == 'date_upd')
 			$order_by_prefix = 'p';
-		else if ($order_by == 'name')
+		elseif ($order_by == 'name')
 			$order_by_prefix = 'pl';
 		if (!Validate::isOrderBy($order_by) || !Validate::isOrderWay($order_way))
 			die (Tools::displayError());

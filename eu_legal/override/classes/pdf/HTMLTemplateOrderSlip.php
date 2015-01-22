@@ -21,9 +21,10 @@ class HTMLTemplateOrderSlip extends HTMLTemplateOrderSlipCore
 		$tax_exempt = Configuration::get('VATNUMBER_MANAGEMENT') && !empty($invoice_address->vat_number) && $invoice_address->id_country != Configuration::get('VATNUMBER_COUNTRY');
 
 		$this->smarty->assign(array(
-			'tax_exempt'    => $tax_exempt,
+			'tax_exempt' => $tax_exempt,
 			'tax_details'   => $this->order->getOrderTaxDetails(false, $this->order_slip),
-			'order'         => $this->order,
+			'order' => $this->order,
+			'ecotax_tax_breakdown' => $this->order_slip->getEcoTaxTaxesBreakdown(),
 			'is_order_slip' => true
 		));
 

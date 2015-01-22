@@ -18,7 +18,7 @@
 		{l s='Delivery' mod='eu_legal'}:
 	</span>
 	<span class="delivery-value">
-		{if $product->quantity <= 0}
+		{if (isset($product->quantity_available) && $product->quantity_available <= 0) || (isset($product->quantity) && $product->quantity <= 0)}
 			{if $allow_oosp}
 				{$product->delivery_later|escape:'htmlall'}
 			{else}
@@ -35,7 +35,8 @@
 		{l s='Delivery' mod='eu_legal'}:
 	</span>
 	<span class="delivery-value">
-		{if $product.quantity <= 0}
+		{$product.quantity_available}
+		{if (isset($product.quantity_available) && $product.quantity_available <= 0) || (isset($product.quantity) && $product.quantity <= 0)}
 			{if $product.allow_oosp}
 				{$product.delivery_later|escape:'htmlall'}
 			{else}
