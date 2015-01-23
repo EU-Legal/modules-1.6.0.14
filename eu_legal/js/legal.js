@@ -78,7 +78,7 @@ var legal = {
                 //console.log(4);
                 clearInterval(checkPaymentInterval);
             }
-        } , 500);
+        } , 1500);
 	});
 	
 	$(document).on('change', '#revocation_terms_aggreed', function(){
