@@ -71,7 +71,8 @@ var legal = {
 
                         self.paymentChosen = pref;
                         self.toggleChosenForm(true);
-                        $.uniform.update("input[name=payment_option]");
+                        if( typeof $.uniform != "undefined")
+                            $.uniform.update("input[name=payment_option]");
                     }
                 }
             } else {
@@ -117,8 +118,10 @@ var legal = {
 		//handle row click instead of direct radio button
 		var $rowClickedInput = $(this).find("input:radio[name=payment_option]");
 		$rowClickedInput.prop('checked',true);
-		val = $rowClickedInput.val();
-		$.uniform.update("input[name=payment_option]");
+	    val = $rowClickedInput.val();
+
+        if( typeof $.uniform != "undefined")
+            $.uniform.update("input[name=payment_option]");
 		
 	    if (val) {
 			legal.paymentChosen = val;
@@ -156,14 +159,23 @@ var legal = {
             if (!this.paymentChosen) {
                 if (typeof txtNoPaymentMethodIsSelected !== 'undefined') {
                     alert(txtNoPaymentMethodIsSelected);
+                    $('html, body').animate({
+                        scrollTop: $('#HOOK_PAYMENT').offset().top + 'px'
+                    }, 'fast');
                 }
             } else if (!this.tosApproved) {
                 if (typeof txtTOSIsNotAccepted !== 'undefined') {
                     alert(txtTOSIsNotAccepted);
+                    $('html, body').animate({
+                        scrollTop: $('#tos').offset().top + 'px'
+                    }, 'fast');
                 }
             } else if (!this.revocationTermsApproved) {
                 if (typeof  txtRevocationTermIsNotAccepted !== 'undefined') {
                     alert(txtRevocationTermIsNotAccepted);
+                    $('html, body').animate({
+                        scrollTop: $('#tos').offset().top + 'px'
+                    }, 'fast');
                 }
             }
         }
