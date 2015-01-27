@@ -76,7 +76,6 @@ function findCombinationLegal() {
 
 		if (combinationMatchForm)
 		{
-			
 			// Unit price are the price per piece, per Kg, per m²
 			// It doesn't modify the price, it's only for display
 			if (productUnitPriceRatio > 0)
@@ -90,7 +89,25 @@ function findCombinationLegal() {
 			
 			$('.weight-info .weight-value').text(parseFloat(product_weight) + parseFloat(weight_combination));
 			
-			//leave the function because combination has been found
+            // update delivery value for combination
+            var quantity_combination = combinationsFromController[combinations[combination]['idCombination']]['quantity'];
+		    if (quantity_combination <= 0)
+            {
+                if (allowBuyWhenOutOfStock)
+                {
+                    $('.delivery-value').text(deliveryLaterValue);
+                }
+                else
+                {
+                    $('.delivery-value').text(deliveryNoStockValue);
+                }
+            }
+            else
+            {
+                $('.delivery-value').text(deliveryNowValue);
+            }
+
+            //leave the function because combination has been found
 			return;
 		}
 	}
@@ -134,6 +151,10 @@ function displayLegal(view)
 					$(element).find('.content_price').append('<span class="weight-info eu-legal">'+weightinfo+'</span>');
 				}
 			}
+
+            $(element).find('.fromprice-info.eu-legal').each(function(i) {
+                $(this).siblings('.product-price').before($(this));
+            });
 		});
                 
         $.totalStorage('displayLegal', 'list');
@@ -152,6 +173,11 @@ function displayLegal(view)
 			if (deliveryinfo != null) { 
 				$(element).find('.availability').after('<span class="delivery-info eu-legal">'+deliveryinfo+'</span>');
 			}
+
+            $(element).find('.fromprice-info.eu-legal').each(function(i) {
+                $(this).siblings('.product-price').before($(this));
+            });
+
 		});
                 
         $.totalStorage('displayLegal', 'grid');

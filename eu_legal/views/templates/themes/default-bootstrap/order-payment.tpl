@@ -63,7 +63,7 @@
 					{include file="$legal_theme_dir/order-address.tpl"}
 					{/if}
 					{if $voucherAllowed}
-						<div  id="cart_voucher" class="cart_voucher">
+						<div  id="cart_voucher" class="cart_voucher box">
 							{if isset($errors_discount) && $errors_discount}
 								<ul class="alert alert-danger">
 									{foreach $errors_discount as $k=>$error}
@@ -90,7 +90,7 @@
 						</div>
 					{/if}
 
-					<div {if !$opc}style="display:none" data-show-if-js{/if} class="checkbox_conditions box" id="tos">
+					<div {if !$opc}style="display:none" data-show-if-js{/if} class="checkbox_conditions box">
 						<h3 class="page-subheading">{l s='Terms of service' mod='eu_legal'}</h3>
 						<p class="checkbox checkbox_conditions">
 							{if isset($conditions) && $conditions}

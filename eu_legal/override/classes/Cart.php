@@ -543,7 +543,7 @@ class Cart extends CartCore
 				}
 
 				// If the cart rule offers a reduction, the amount is prorated (with the products in the package)
-				if ($cart_rule['obj']->reduction_percent != 0 || $cart_rule['obj']->reduction_amount != 0)
+				if ($cart_rule['obj']->reduction_percent > 0 || $cart_rule['obj']->reduction_amount > 0)
 					$order_total_discount += Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_REDUCTION, $package, $use_cache), _PS_PRICE_COMPUTE_PRECISION_);
 			}
 			$order_total_discount = min(Tools::ps_round($order_total_discount, 2), $wrapping_fees + $order_total_products + $shipping_fees);
@@ -1005,10 +1005,6 @@ class Cart extends CartCore
 				return false;
 			}
 		}
-
-		// Apply tax
-		if ($use_tax && isset($carrier_tax))
-			$shipping_cost *= 1 + ($carrier_tax / 100);
 
 		$shipping_cost = (float)Tools::ps_round((float)$shipping_cost, 2);
 		Cache::store($cache_id, $shipping_cost);
