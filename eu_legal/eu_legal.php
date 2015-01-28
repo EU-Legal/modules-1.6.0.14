@@ -2,15 +2,15 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.0.6
- * @date      : 2014 11 18
+ * @version   : 1.0.7
+ * @date      : 2015 01 21
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
- * @copyright : 2014 Onlineshop-Module.de | 2014 Silbersaiten.de
+ * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
  * @homepage  : www.onlineshop-module.de | www.silbersaiten.de
  * @license   : http://opensource.org/licenses/osl-3.0.php
  * @changelog : see changelog.txt
- * @compatibility : PS == 1.6.0.9
+ * @compatibility : PS == 1.6.0.11
  */
 
 /* no direct access to this module */

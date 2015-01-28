@@ -28,7 +28,7 @@
             {$product->delivery_now|escape:'htmlall'}
         {/if}
 	</span>
-</span>
+    </span>
 {else}
     <span class="delivery-info">
 	<span class="delivery-label">
