@@ -1461,7 +1461,7 @@ class EU_Legal extends Module
 			self::$_cms_pages[] = array('id_cms' => 0, 'name' => $this->l('-- Please select a CMS page --'));
 
 			foreach ($result as $key => $row)
-				self::$_cms_pages[] = array('id_cms' => $row['id_cms'], 'name' => $row['meta_title']);
+				self::$_cms_pages[] = array('id_cms' => $row['id_cms'], 'name' => $row['id_cms'].'-'.$row['meta_title']);
 
 		}
 
