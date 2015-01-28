@@ -11,7 +11,6 @@
 * @changelog : see changelog.txt
 * @compatibility : PS == 1.6.0.9
 *}
-
 {if $is_object}
 	{if !$priceDisplay || $priceDisplay == 2}
 		{assign var='productPrice' value=$product->getPrice(true, $smarty.const.NULL, $priceDisplayPrecision)}
@@ -30,9 +29,7 @@
 	{assign var='productPriceWithoutReduction' value=$product.price_without_reduction}
 	
 {/if}
-
 {if $template_type == 'price'}
-	
 	{if $is_object}
 		<span class="tax-shipping-info eu-legal">
 			{if $tax_enabled  && ((isset($display_tax_label) && $display_tax_label == 1) || !isset($display_tax_label))}
@@ -49,6 +46,9 @@
 			</div>
 			{/if}
 		</span>
+        {if isset($product->id_product_attribute) && $product->id_product_attribute > 0}
+            <span class="fromprice-info eu-legal">{l s='From' mod='eu_legal'} </span>
+        {/if}
 	{else}
 		<span class="tax-shipping-info eu-legal">
 			{if $tax_enabled  && ((isset($display_tax_label) && $display_tax_label == 1) || !isset($display_tax_label))}
@@ -65,6 +65,9 @@
 			</div>
 			{/if}
 		</span>
+        {if isset($product.id_product_attribute) && $product.id_product_attribute > 0}
+            <span class="fromprice-info eu-legal">{l s='From' mod='eu_legal'} </span>
+        {/if}
 	{/if}
 	
 

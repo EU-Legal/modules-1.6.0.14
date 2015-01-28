@@ -50,6 +50,9 @@ class OrderController extends OrderControllerCore
 		if ($this->nbProducts)
 			$this->context->smarty->assign('virtual_cart', $this->context->cart->isVirtualCart());
 
+		if (!Tools::getValue('multi-shipping'))
+			$this->context->cart->setNoMultishipping();
+
 		// 4 steps to the order
 		switch ((int)$this->step)
 		{
@@ -138,7 +141,6 @@ class OrderController extends OrderControllerCore
 					$this->setTemplate($tpl);
 				else
 					$this->setTemplate(_PS_THEME_DIR_.'order-payment.tpl');
-
 				break;
 
 			default:

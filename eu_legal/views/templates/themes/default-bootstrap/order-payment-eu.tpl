@@ -26,7 +26,7 @@
 	}
 </style>
 
-<div class="panel">
+<div class="panel box">
 	<h2 class="page-subheading">{l s='Payment Options' mod='eu_legal'}</h2>
 	{if $payment_options}
 		<table class="table payment-summary">

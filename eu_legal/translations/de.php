@@ -99,6 +99,8 @@ $_MODULE['<{eu_legal}prestashop>displayproductdeliverytime_bc0f7082192ef02e934a0
 $_MODULE['<{eu_legal}prestashop>displayproductpriceblock_887ee91702c962a70b87cbef07bbcaec'] = 'zzgl. MwSt.';
 $_MODULE['<{eu_legal}prestashop>displayproductpriceblock_e2e79605fc9450ec17957cf0e910f5c6'] = 'inkl. MwSt.';
 $_MODULE['<{eu_legal}prestashop>displayproductpriceblock_f4b1daf5289b404e6bd90ecd3ef46756'] = 'zzgl. Versandkosten';
+$_MODULE['<{eu_legal}prestashop>displayproductpriceblock_545103cb6e5603411f1de5cffd75974e'] = 'Gem. § 19 UStG wird die Umsatzsteuer in der Rechnung nicht ausgewiesen.';
+$_MODULE['<{eu_legal}prestashop>displayproductpriceblock_5da618e8e4b89c66fe86e32cdafde142'] = 'Ab';
 $_MODULE['<{eu_legal}prestashop>displayproductpriceblock_6a1d74bd59d28d765e00e3b6d175d02a'] = 'vorher';
 $_MODULE['<{eu_legal}prestashop>displayproductpriceblock_b253d3cdc13dcea51ded533464d7531c'] = 'Grundpreis';
 $_MODULE['<{eu_legal}prestashop>displayproductpriceblock_fe3838c7c11aa406dd956566e17360d5'] = 'pro';
@@ -184,6 +186,9 @@ $_MODULE['<{eu_legal}prestashop>order-payment_568132c17bd8bea65b3d7ba5cd4b8e55']
 $_MODULE['<{eu_legal}prestashop>order-payment_59319ac504f7ad04ae16126cf49e7f7e'] = 'Ihre Art der Bezahlung';
 $_MODULE['<{eu_legal}prestashop>order-payment_e747da89afc98485bb90928d397e9821'] = 'Wählen Sie Ihre Zahlungsweise';
 $_MODULE['<{eu_legal}prestashop>order-payment_8e1263b23607508e7ba8ff39aec8031d'] = 'Es wurde noch kein Zahlungsmodul installiert.';
+$_MODULE['<{eu_legal}prestashop>order-payment_a82868319826fb092b73968e661b5b38'] = 'Gutscheine';
+$_MODULE['<{eu_legal}prestashop>order-payment_e0aa021e21dddbd6d8cecec71e9cf564'] = 'ok';
+$_MODULE['<{eu_legal}prestashop>order-payment_12a7a93d72ded50311b52c7d0a853e3c'] = '';
 $_MODULE['<{eu_legal}prestashop>order-payment_e4045598261988d9988c594243a9434d'] = 'Geschäftsbedingungen';
 $_MODULE['<{eu_legal}prestashop>order-payment_3abbd962f6751baf05a19c4ebbc8d0e7'] = 'Ich erkläre mich mit den';
 $_MODULE['<{eu_legal}prestashop>order-payment_99b0a9110ebd2fa6dcd57f7daa5b5d42'] = 'AGB';

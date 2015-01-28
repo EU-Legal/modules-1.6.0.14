@@ -10,7 +10,7 @@
  * @homepage  : www.onlineshop-module.de | www.silbersaiten.de
  * @license   : http://opensource.org/licenses/osl-3.0.php
  * @changelog : see changelog.txt
- * @compatibility : PS == 1.6.0.9
+ * @compatibility : PS == 1.6.0.11
  */
 
 /* no direct access to this module */
@@ -59,7 +59,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.0.7';
+		$this->version = '1.1.0';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -69,8 +69,8 @@ class EU_Legal extends Module
 
 		// module compliancy: only for exactly one PS version
 		$this->ps_versions_compliancy = array(
-			'min' => '1.6.0.7',
-			'max' => '1.6.0.9'
+			'min' => '1.6.0.11',
+			'max' => '1.6.0.11'
 		);
 
 		// bootstrap baqckoffice functionality
@@ -381,6 +381,23 @@ class EU_Legal extends Module
 			$this->_errors[] = $this->l('Could not modify db table:').' '._DB_PREFIX_.'product_lang';
 		}
 
+        /*
+        // add product_attribute_lang table
+        if ($return && !$this->dbColumnExists('product_attribute_lang', 'delivery_now') && !$this->dbColumnExists
+                ('product_attribute_lang', 'delivery_later') && !DB::getInstance()->execute('
+			CREATE TABLE `'._DB_PREFIX_.'product_attribute_lang`
+		    (`id_product_attribute` int(10) unsigned NOT NULL,
+             `id_shop` int(10) unsigned NOT NULL,
+             `id_lang` int(10) unsigned NOT NULL,
+		     `delivery_now` VARCHAR(255) NULL DEFAULT NULL,
+			 `delivery_later` VARCHAR(255) NULL DEFAULT NULL);
+		'))
+        {
+            $return &= false;
+            $this->_errors[] = $this->l('Could not modify db table:').' '._DB_PREFIX_.'product_attribute_lang';
+        }
+        */
+
 		// regenerate class index
 		Autoload::getInstance()->generateIndex();
 
@@ -411,6 +428,14 @@ class EU_Legal extends Module
 			$return &= false;
 		}
 
+        /*
+        if ($return && !@copy($this->local_path.'override/controllers/admin/templates/products/combinations.tpl', _PS_OVERRIDE_DIR_.'controllers/admin/templates/products/combinations.tpl'))
+        {
+            $this->_errors[] = $this->l('Could not copy admin templates.');
+            $return &= false;
+        }
+        */
+
 		if ($return && !is_dir(_PS_OVERRIDE_DIR_.'controllers/admin/templates/customers/helpers/view') && !@mkdir(_PS_OVERRIDE_DIR_.'controllers/admin/templates/customers/helpers/view', 0755, true))
 		{
 			$return &= false;
@@ -433,6 +458,11 @@ class EU_Legal extends Module
 		$return = true;
 
 		$return &= @unlink(_PS_OVERRIDE_DIR_.'controllers/admin/templates/products/quantities.tpl');
+
+        /*
+        $return &= @unlink(_PS_OVERRIDE_DIR_.'controllers/admin/templates/products/combinations.tpl');
+        */
+
 		$return &= @unlink(_PS_OVERRIDE_DIR_.'controllers/admin/templates/customers/helpers/view/view.tpl');
 
 		return $return;
@@ -507,7 +537,7 @@ class EU_Legal extends Module
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
 				$return &= Configuration::deleteByName($cms_page['config']);
 
-		// restore daatabase structure
+		// restore database structure
 		if ($return && $this->dbColumnExists('product_lang', 'delivery_now') &&
 			$this->dbColumnExists('product_lang', 'delivery_later') &&
 			!DB::getInstance()->execute('
@@ -516,6 +546,15 @@ class EU_Legal extends Module
 			DROP COLUMN `delivery_later`;
 		'))
 			$return &= false;
+
+        /*
+        if ($return && $this->dbColumnExists('product_attribute_lang', 'delivery_now') &&
+            $this->dbColumnExists('product_attribute_lang', 'delivery_later') &&
+            !DB::getInstance()->execute('
+			DROP TABLE `'._DB_PREFIX_.'product_attribute_lang`
+		'))
+            $return &= false;
+        */
 
 		$this->uninstallAdminTemplates();
 
@@ -1422,7 +1461,7 @@ class EU_Legal extends Module
 			self::$_cms_pages[] = array('id_cms' => 0, 'name' => $this->l('-- Please select a CMS page --'));
 
 			foreach ($result as $key => $row)
-				self::$_cms_pages[] = array('id_cms' => $row['id_cms'], 'name' => $row['meta_title']);
+				self::$_cms_pages[] = array('id_cms' => $row['id_cms'], 'name' => $row['id_cms'].'-'.$row['meta_title']);
 
 		}
 
@@ -1927,14 +1966,12 @@ class EU_Legal extends Module
 
 		if (!$this->isCached('displayProductDeliveryTime.tpl', $this->getCacheId($cache_key)))
 		{
-
 			$this->smarty->assign(array(
 				'is_object' => (bool)($params['product'] instanceof Product),
 				'product' => $params['product'],
 				'priceDisplay' => Product::getTaxCalculationMethod((int)$this->context->cookie->id_customer),
 				'priceDisplayPrecision' => _PS_PRICE_DISPLAY_PRECISION_,
 			));
-
 		}
 
 		return $this->display(__FILE__, 'displayProductDeliveryTime.tpl', $this->getCacheId($cache_key));

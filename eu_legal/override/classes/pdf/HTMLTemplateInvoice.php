@@ -21,14 +21,14 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
 
 		$address = new Address((int)$this->order->{Configuration::get('PS_TAX_ADDRESS_TYPE')});
 		$tax_exempt = Configuration::get('VATNUMBER_MANAGEMENT')
-							&& !empty($address->vat_number)
-							&& $address->id_country != Configuration::get('VATNUMBER_COUNTRY');
+			&& !empty($address->vat_number)
+			&& $address->id_country != Configuration::get('VATNUMBER_COUNTRY');
 		$carrier = new Carrier($this->order->id_carrier);
-			
+
 		$data = array(
 			'tax_exempt' => $tax_exempt,
 			'use_one_after_another_method' => $this->order_invoice->useOneAfterAnotherTaxComputationMethod(),
-			'product_tax_breakdown' => $this->order_invoice->getProductTaxesBreakdown(),
+			'product_tax_breakdown' => $this->order_invoice->getProductTaxesBreakdown($this->order),
 			'shipping_tax_breakdown' => $this->order_invoice->getShippingTaxesBreakdown($this->order),
 			'ecotax_tax_breakdown' => $this->order_invoice->getEcoTaxTaxesBreakdown(),
 			'wrapping_tax_breakdown' => $this->order_invoice->getWrappingTaxesBreakdown(),
@@ -36,7 +36,7 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
 			'order_invoice' => $debug ? null : $this->order_invoice,
 			'carrier' => $debug ? null : $carrier
 		);
-		
+
 		if (method_exists($this->order, 'getOrderTaxDetails'))
 		{
 			$data['tax_details'] = $this->order->getOrderTaxDetails();

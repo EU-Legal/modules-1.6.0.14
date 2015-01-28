@@ -63,7 +63,7 @@
 					{include file="$legal_theme_dir/order-address.tpl"}
 					{/if}
 					{if $voucherAllowed}
-						<div  id="cart_voucher" class="cart_voucher">
+						<div  id="cart_voucher" class="cart_voucher box">
 							{if isset($errors_discount) && $errors_discount}
 								<ul class="alert alert-danger">
 									{foreach $errors_discount as $k=>$error}

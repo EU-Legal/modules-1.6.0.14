@@ -51,7 +51,7 @@ class Cart extends CartCore
 						stock.`quantity` AS quantity_available, p.`width`, p.`height`, p.`depth`, stock.`out_of_stock`, p.`weight`,
 						p.`date_add`, p.`date_upd`, IFNULL(stock.quantity, 0) as quantity, pl.`link_rewrite`, cl.`link_rewrite` AS category,
 						CONCAT(LPAD(cp.`id_product`, 10, 0), LPAD(IFNULL(cp.`id_product_attribute`, 0), 10, 0), IFNULL(cp.`id_address_delivery`, 0)) AS unique_id, cp.id_address_delivery,
-						product_shop.`wholesale_price`, product_shop.advanced_stock_management, ps.product_supplier_reference supplier_reference');
+						product_shop.advanced_stock_management, ps.product_supplier_reference supplier_reference, IFNULL(sp.`reduction_type`, 0) AS reduction_type');
 
 		// Build FROM
 		$sql->from('cart_product', 'cp');
@@ -71,6 +71,8 @@ class Cart extends CartCore
 
 		$sql->leftJoin('product_supplier', 'ps', 'ps.`id_product` = cp.`id_product` AND ps.`id_product_attribute` = cp.`id_product_attribute` AND ps.`id_supplier` = p.`id_supplier`');
 
+		$sql->leftJoin('specific_price', 'sp', 'sp.`id_product` = cp.`id_product`'); // AND 'sp.`id_shop` = cp.`id_shop`
+
 		// @todo test if everything is ok, then refactorise call of this method
 		$sql->join(Product::sqlStock('cp', 'cp'));
 
@@ -84,7 +86,7 @@ class Cart extends CartCore
 		$sql->groupBy('unique_id');
 
 		// Build ORDER BY
-		$sql->orderBy('p.`id_product`, cp.`id_product_attribute`, cp.`date_add` ASC');
+		$sql->orderBy('cp.`date_add`, p.`id_product`, cp.`id_product_attribute` ASC');
 
 		if (Customization::isFeatureActive())
 		{
@@ -104,7 +106,8 @@ class Cart extends CartCore
 				IF (IFNULL(pa.`ean13`, \'\') = \'\', p.`ean13`, pa.`ean13`) AS ean13,
 				IF (IFNULL(pa.`upc`, \'\') = \'\', p.`upc`, pa.`upc`) AS upc,
 				pai.`id_image` as pai_id_image, il.`legend` as pai_legend,
-				IFNULL(product_attribute_shop.`minimal_quantity`, product_shop.`minimal_quantity`) as minimal_quantity
+				IFNULL(product_attribute_shop.`minimal_quantity`, product_shop.`minimal_quantity`) as minimal_quantity,
+				IF(product_attribute_shop.wholesale_price > 0,  product_attribute_shop.wholesale_price, product_shop.`wholesale_price`) wholesale_price
 			');
 
 			$sql->leftJoin('product_attribute', 'pa', 'pa.`id_product_attribute` = cp.`id_product_attribute`');
@@ -115,7 +118,7 @@ class Cart extends CartCore
 		else
 			$sql->select(
 				'p.`reference` AS reference, p.`ean13`,
-				p.`upc` AS upc, product_shop.`minimal_quantity` AS minimal_quantity'
+				p.`upc` AS upc, product_shop.`minimal_quantity` AS minimal_quantity, product_shop.`wholesale_price` wholesale_price'
 			);
 		$result = Db::getInstance()->executeS($sql);
 
@@ -159,107 +162,45 @@ class Cart extends CartCore
 			if ($cart_shop_context->shop->id != $row['id_shop'])
 				$cart_shop_context->shop = new Shop((int)$row['id_shop']);
 
-			$specific_price_output = false;
-			$null = false;
+			$address = Address::initialize($address_id, true);
+			$id_tax_rules_group = Product::getIdTaxRulesGroupByIdProduct((int)$row['id_product'], $cart_shop_context);
+			$tax_calculator = TaxManagerFactory::getManager($address, $id_tax_rules_group)->getTaxCalculator();
 
-			if ($this->_taxCalculationMethod == PS_TAX_EXC)
+			$row['price'] = Product::getPriceStatic(
+				(int)$row['id_product'],
+				false,
+				isset($row['id_product_attribute']) ? (int)$row['id_product_attribute'] : null,
+				6,
+				null,
+				false,
+				true,
+				$row['cart_quantity'],
+				false,
+				(int)$this->id_customer ? (int)$this->id_customer : null,
+				(int)$this->id,
+				$address_id,
+				$specific_price_output,
+				false,
+				true,
+				$cart_shop_context
+			);
+
+			switch (Configuration::get('PS_ROUND_TYPE'))
 			{
-				$row['price'] = Product::getPriceStatic(
-					(int)$row['id_product'],
-					false,
-					isset($row['id_product_attribute']) ? (int)$row['id_product_attribute'] : null,
-					2,
-					null,
-					false,
-					true,
-					(int)$row['cart_quantity'],
-					false,
-					((int)$this->id_customer ? (int)$this->id_customer : null),
-					(int)$this->id,
-					((int)$address_id ? (int)$address_id : null),
-					$specific_price_output,
-					true,
-					true,
-					$cart_shop_context
-				); // Here taxes are computed only once the quantity has been applied to the product price
+				case Order::ROUND_TOTAL:
+				case Order::ROUND_LINE:
+					$row['total'] = Tools::ps_round($row['price'] * (int)$row['cart_quantity'], _PS_PRICE_COMPUTE_PRECISION_);
+					$row['total_wt'] = Tools::ps_round($tax_calculator->addTaxes($row['price']) * (int)$row['cart_quantity'], _PS_PRICE_COMPUTE_PRECISION_);
+					break;
 
-				$row['price_wt'] = Product::getPriceStatic(
-					(int)$row['id_product'],
-					true,
-					isset($row['id_product_attribute']) ? (int)$row['id_product_attribute'] : null,
-					6, /* EU-Legal	* correct calculation of prices -> Problem with inaccuracy at high number of items */
-					null,
-					false,
-					true,
-					(int)$row['cart_quantity'],
-					false,
-					((int)$this->id_customer ? (int)$this->id_customer : null),
-					(int)$this->id,
-					((int)$address_id ? (int)$address_id : null),
-					$null,
-					true,
-					true,
-					$cart_shop_context
-				);
-
-				$tax_rate = Tax::getProductTaxRate((int)$row['id_product'], (int)$address_id);
-
-				/* 
-				* EU-Legal
-				* correct calculation of prices -> Problem with inaccuracy at high number of items
-				*/
-				$row['total_wt'] = $row['price_wt'] * (int)$row['cart_quantity'];
-				$row['total'] = Tools::ps_round($row['price'] * (int)$row['cart_quantity'], 2);
+				case Order::ROUND_ITEM:
+				default:
+					$row['total'] = Tools::ps_round($row['price'], _PS_PRICE_COMPUTE_PRECISION_) * (int)$row['cart_quantity'];
+					$row['total_wt'] = Tools::ps_round($tax_calculator->addTaxes($row['price']), _PS_PRICE_COMPUTE_PRECISION_) * (int)$row['cart_quantity'];
+					break;
 			}
-			else
-			{
-				$row['price'] = Product::getPriceStatic(
-					(int)$row['id_product'],
-					false,
-					(int)$row['id_product_attribute'],
-					6, /* EU-Legal	* correct calculation of prices -> Problem with inaccuracy at high number of items */
-					null,
-					false,
-					true,
-					$row['cart_quantity'],
-					false,
-					((int)$this->id_customer ? (int)$this->id_customer : null),
-					(int)$this->id,
-					((int)$address_id ? (int)$address_id : null),
-					$specific_price_output,
-					true,
-					true,
-					$cart_shop_context
-				);
-
-				$row['price_wt'] = Product::getPriceStatic(
-					(int)$row['id_product'],
-					true,
-					(int)$row['id_product_attribute'],
-					2,
-					null,
-					false,
-					true,
-					$row['cart_quantity'],
-					false,
-					((int)$this->id_customer ? (int)$this->id_customer : null),
-					(int)$this->id,
-					((int)$address_id ? (int)$address_id : null),
-					$null,
-					true,
-					true,
-					$cart_shop_context
-				);
-
-				// In case when you use QuantityDiscount, getPriceStatic() can be return more of 2 decimals
-				$row['price_wt'] = Tools::ps_round($row['price_wt'], 2);
-				$row['total_wt'] = $row['price_wt'] * (int)$row['cart_quantity'];
-				/* 
-				* EU-Legal
-				* correct calculation of prices -> Problem with inaccuracy at high number of items
-				*/
-				$row['total'] = $row['price'] * (int)$row['cart_quantity'];
-			}
+			$row['price_wt'] = $tax_calculator->addTaxes($row['price']);
+			$row['description_short'] = Tools::nl2br($row['description_short']);
 
 			if (!isset($row['pai_id_image']) || $row['pai_id_image'] == 0)
 			{
@@ -319,6 +260,8 @@ class Cart extends CartCore
 		* EU-Legal
 		* correct calculation of prices -> Problem with inaccuracy at high number of items
 		*/
+
+		static $address = null;
 
 		if (!$this->id)
 			return 0;
@@ -416,6 +359,8 @@ class Cart extends CartCore
 
 		$specific_price_output = false;
 		$null = false;
+		$products_total = array();
+		$ecotax_total = 0;
 
 		foreach ($products as $product) // products refer to the cart details
 		{
@@ -423,104 +368,119 @@ class Cart extends CartCore
 				$virtual_context->shop = new Shop((int)$product['id_shop']);
 
 			if (Configuration::get('PS_TAX_ADDRESS_TYPE') == 'id_address_invoice')
-				$address_id = (int)$this->id_address_invoice;
+				$id_address = (int)$this->id_address_invoice;
 			else
-				$address_id = (int)$product['id_address_delivery']; // Get delivery address of the product from the cart
-			if (!Address::addressExists($address_id))
-				$address_id = null;
+				$id_address = (int)$product['id_address_delivery']; // Get delivery address of the product from the cart
+			if (!Address::addressExists($id_address))
+				$id_address = null;
 
-			if ($this->_taxCalculationMethod == PS_TAX_EXC)
+			$price = Product::getPriceStatic(
+				(int)$product['id_product'],
+				false,
+				(int)$product['id_product_attribute'],
+				6,
+				null,
+				false,
+				true,
+				$product['cart_quantity'],
+				false,
+				(int)$this->id_customer ? (int)$this->id_customer : null,
+				(int)$this->id,
+				$id_address,
+				$null,
+				false,
+				true,
+				$virtual_context
+			);
+
+			if (Configuration::get('PS_USE_ECOTAX'))
 			{
-				// Here taxes are computed only once the quantity has been applied to the product price
-				$price = Product::getPriceStatic(
-					(int)$product['id_product'],
-					false,
-					(int)$product['id_product_attribute'],
-					2,
-					null,
-					false,
-					true,
-					$product['cart_quantity'],
-					false,
-					(int)$this->id_customer ? (int)$this->id_customer : null,
-					(int)$this->id,
-					$address_id,
-					$null,
-					true,
-					true,
-					$virtual_context
-				);
-				$product_tax_rate = 0;
-				$total_ecotax = $product['ecotax'] * (int)$product['cart_quantity'];
-				$total_price = $price * (int)$product['cart_quantity'];
-				$order_total_products_taxed += ($total_price - $total_ecotax) * (1 + $product_tax_rate / 100);
+				$ecotax = $product['ecotax'];
+				if (isset($product['attribute_ecotax']) && $product['attribute_ecotax'] > 0)
+					$ecotax = $product['attribute_ecotax'];
+			}
+			else
+				$ecotax = 0;
 
-				if ($with_taxes)
-				{
-					$product_tax_rate = (float)Tax::getProductTaxRate((int)$product['id_product'], (int)$address_id, $virtual_context);
-					$product_eco_tax_rate = Tax::getProductEcotaxRate((int)$address_id);
+			$address = Address::initialize($id_address, true);
 
-					$total_price = ($total_price - $total_ecotax) * (1 + $product_tax_rate / 100);
-					$total_ecotax = $total_ecotax * (1 + $product_eco_tax_rate / 100);
-					/* 
-					* EU-Legal
-					* correct calculation of prices -> Problem with inaccuracy at high number of items
-					*/
+			if ($with_taxes)
+			{
+				$id_tax_rules_group = Product::getIdTaxRulesGroupByIdProduct((int)$product['id_product'], $virtual_context);
+				$tax_calculator = TaxManagerFactory::getManager($address, $id_tax_rules_group)->getTaxCalculator();
 
-					$total_price = $total_price + $total_ecotax;
-
-				}
+				if ($ecotax)
+					$ecotax_tax_calculator = TaxManagerFactory::getManager($address, (int)Configuration::get('PS_ECOTAX_TAX_RULES_GROUP_ID'))->getTaxCalculator();
 
 			}
 			else
+				$id_tax_rules_group = 0;
+
+			if (in_array(Configuration::get('PS_ROUND_TYPE'), array(Order::ROUND_ITEM, Order::ROUND_LINE)))
 			{
-				if ($with_taxes)
-					$price = Product::getPriceStatic(
-						(int)$product['id_product'],
-						true,
-						(int)$product['id_product_attribute'],
-						2,
-						null,
-						false,
-						true,
-						$product['cart_quantity'],
-						false,
-						((int)$this->id_customer ? (int)$this->id_customer : null),
-						(int)$this->id,
-						((int)$address_id ? (int)$address_id : null),
-						$null,
-						true,
-						true,
-						$virtual_context
-					);
-				else
-					$price = Product::getPriceStatic(
-						(int)$product['id_product'],
-						false,
-						(int)$product['id_product_attribute'],
-						6, /* EU-Legal	* correct calculation of prices -> Problem with inaccuracy at high number of items */
-						null,
-						false,
-						true,
-						$product['cart_quantity'],
-						false,
-						((int)$this->id_customer ? (int)$this->id_customer : null),
-						(int)$this->id,
-						((int)$address_id ? (int)$address_id : null),
-						$null,
-						true,
-						true,
-						$virtual_context
-					);
-				/* 
-				* EU-Legal
-				* correct calculation of prices -> Problem with inaccuracy at high number of items
-				*/
-				$total_price = $price * (int)$product['cart_quantity'];
-				$order_total_products_taxed += Tools::ps_round($total_price, 2);
+				if (!isset($products_total[$id_tax_rules_group]))
+					$products_total[$id_tax_rules_group] = 0;
+
 			}
-			$order_total += $total_price;
+			else
+				if (!isset($products_total[$id_tax_rules_group.'_'.$id_address]))
+					$products_total[$id_tax_rules_group.'_'.$id_address] = 0;
+
+			switch (Configuration::get('PS_ROUND_TYPE'))
+			{
+				case Order::ROUND_TOTAL:
+					$products_total[$id_tax_rules_group.'_'.$id_address] += $price * (int)$product['cart_quantity'];
+
+					if ($ecotax)
+						$ecotax_total += $ecotax * (int)$product['cart_quantity'];
+					break;
+				case Order::ROUND_LINE:
+					$product_price = $price * $product['cart_quantity'];
+					$products_total[$id_tax_rules_group] += Tools::ps_round($product_price, _PS_PRICE_COMPUTE_PRECISION_);
+
+					if ($with_taxes)
+						$products_total[$id_tax_rules_group] += Tools::ps_round($tax_calculator->getTaxesTotalAmount($product_price), _PS_PRICE_COMPUTE_PRECISION_);
+
+					if ($ecotax)
+					{
+						$ecotax_price = $ecotax * (int)$product['cart_quantity'];
+						$ecotax_total += Tools::ps_round($ecotax_price, _PS_PRICE_COMPUTE_PRECISION_);
+
+						if ($with_taxes)
+							$ecotax_total += Tools::ps_round($ecotax_tax_calculator->getTaxesTotalAmount($ecotax_price), _PS_PRICE_COMPUTE_PRECISION_);
+					}
+					break;
+				case Order::ROUND_ITEM:
+				default:
+					$product_price = $with_taxes ? $tax_calculator->addTaxes($price) : $price;
+					$products_total[$id_tax_rules_group] += Tools::ps_round($product_price, _PS_PRICE_COMPUTE_PRECISION_) * (int)$product['cart_quantity'];
+
+					if ($ecotax)
+					{
+						$ecotax_price = $with_taxes ? $ecotax_tax_calculator->addTaxes($ecotax) : $ecotax;
+						$ecotax_total += Tools::ps_round($ecotax_price, _PS_PRICE_COMPUTE_PRECISION_) * (int)$product['cart_quantity'];
+					}
+					break;
+			}
 		}
+
+		foreach ($products_total as $key => $price)
+		{
+			if ($with_taxes && Configuration::get('PS_ROUND_TYPE') == Order::ROUND_TOTAL)
+			{
+				$tmp = explode('_', $key);
+				$address = Address::initialize((int)$tmp[1], true);
+				$tax_calculator = TaxManagerFactory::getManager($address, $tmp[0])->getTaxCalculator();
+				$order_total += Tools::ps_round($price, _PS_PRICE_COMPUTE_PRECISION_) + Tools::ps_round($tax_calculator->getTaxesTotalAmount($price), _PS_PRICE_COMPUTE_PRECISION_);
+			}
+			else
+				$order_total += $price;
+		}
+
+		if ($ecotax_total && $with_taxes && Configuration::get('PS_ROUND_TYPE') == Order::ROUND_TOTAL)
+			$ecotax_total = Tools::ps_round($ecotax_total, _PS_PRICE_COMPUTE_PRECISION_) + Tools::ps_round($ecotax_tax_calculator->getTaxesTotalAmount($ecotax_total), _PS_PRICE_COMPUTE_PRECISION_);
+
+		$order_total += $ecotax_total;
 
 		$order_total_products = $order_total;
 
@@ -530,7 +490,7 @@ class Cart extends CartCore
 		// Wrapping Fees
 		$wrapping_fees = 0;
 		if ($this->gift)
-			$wrapping_fees = Tools::convertPrice(Tools::ps_round($this->getGiftWrappingPrice($with_taxes), 2), Currency::getCurrencyInstance((int)$this->id_currency));
+			$wrapping_fees = Tools::convertPrice(Tools::ps_round($this->getGiftWrappingPrice($with_taxes), _PS_PRICE_COMPUTE_PRECISION_), Currency::getCurrencyInstance((int)$this->id_currency));
 		if ($type == Cart::ONLY_WRAPPING)
 			return $wrapping_fees;
 
@@ -565,7 +525,7 @@ class Cart extends CartCore
 			{
 				// If the cart rule offers free shipping, add the shipping cost
 				if (($with_shipping || $type == Cart::ONLY_DISCOUNTS) && $cart_rule['obj']->free_shipping)
-					$order_total_discount += Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_SHIPPING, ($param_product ? $package : null), $use_cache), 2);
+					$order_total_discount += Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_SHIPPING, ($param_product ? $package : null), $use_cache), _PS_PRICE_COMPUTE_PRECISION_);
 
 				// If the cart rule is a free gift, then add the free gift value only if the gift is in this package
 				if ((int)$cart_rule['obj']->gift_product)
@@ -583,8 +543,8 @@ class Cart extends CartCore
 				}
 
 				// If the cart rule offers a reduction, the amount is prorated (with the products in the package)
-				if ($cart_rule['obj']->reduction_percent != 0 || $cart_rule['obj']->reduction_amount != 0)
-					$order_total_discount += Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_REDUCTION, $package, $use_cache), 2);
+				if ($cart_rule['obj']->reduction_percent > 0 || $cart_rule['obj']->reduction_amount > 0)
+					$order_total_discount += Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_REDUCTION, $package, $use_cache), _PS_PRICE_COMPUTE_PRECISION_);
 			}
 			$order_total_discount = min(Tools::ps_round($order_total_discount, 2), $wrapping_fees + $order_total_products + $shipping_fees);
 			$order_total -= $order_total_discount;
@@ -599,27 +559,13 @@ class Cart extends CartCore
 		if ($type == Cart::ONLY_DISCOUNTS)
 			return $order_total_discount;
 
-		/* 
-		* EU-Legal
-		* correct calculation of prices -> Problem with inaccuracy at high number of items
-		*/
-		//return Tools::ps_round((float)$order_total, 2);
-
-		if ($this->_taxCalculationMethod == PS_TAX_EXC)
-			if ($with_taxes)
-				return (float)$order_total;
-			else
-				return Tools::ps_round((float)$order_total, 2);
-		else
-			if ($with_taxes)
-				return Tools::ps_round((float)$order_total, 2);
-			else
-				return (float)$order_total;
+		return Tools::ps_round((float)$order_total, _PS_PRICE_COMPUTE_PRECISION_);
 
 	}
 
 	public function getGiftWrappingPrice($with_taxes = true, $id_address = null)
 	{
+		static $address = array();
 		/*
 		* EU-Legal
 		* alternative method for tax calculation (LEGAL_SHIPTAXMETH)
@@ -630,8 +576,24 @@ class Cart extends CartCore
 		$wrapping_fees = (float)Configuration::get('PS_GIFT_WRAPPING_PRICE');
 		if ($with_taxes && $wrapping_fees > 0)
 		{
-			$tax_rate = Cart::getTaxesAverageUsed((int)($this->id));
-			$wrapping_fees = $wrapping_fees * (1 + ($tax_rate / 100));
+			if (!isset($address[$this->id]))
+			{
+				if ($id_address === null)
+					$id_address = (int)$this->{Configuration::get('PS_TAX_ADDRESS_TYPE')};
+				try
+				{
+					$address[$this->id] = Address::initialize($id_address);
+				}
+				catch (Exception $e)
+				{
+					$address[$this->id] = new Address();
+					$address[$this->id]->id_country = Configuration::get('PS_COUNTRY_DEFAULT');
+				}
+			}
+
+			$tax_manager = TaxManagerFactory::getManager($address[$this->id], (int)Configuration::get('PS_GIFT_WRAPPING_TAX_RULES_GROUP'));
+			$tax_calculator = $tax_manager->getTaxCalculator();
+			$wrapping_fees = $tax_calculator->addTaxes($wrapping_fees);
 		}
 
 		return $wrapping_fees;
@@ -821,7 +783,8 @@ class Cart extends CartCore
 			if (!$this->isMultiAddressDelivery()
 				&& isset($this->id_address_delivery) // Be carefull, id_address_delivery is not usefull one 1.5
 				&& $this->id_address_delivery
-				&& Customer::customerHasAddress($this->id_customer, $this->id_address_delivery))
+				&& Customer::customerHasAddress($this->id_customer, $this->id_address_delivery
+				))
 
 				$id_zone = Address::getZoneById((int)$this->id_address_delivery);
 			else
@@ -979,7 +942,8 @@ class Cart extends CartCore
 			}
 
 			if (($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT && !Carrier::checkDeliveryPriceByWeight($carrier->id, $this->getTotalWeight(), (int)$id_zone))
-				|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && !Carrier::checkDeliveryPriceByPrice($carrier->id, $total_package_without_shipping_tax_inc, $id_zone, (int)$this->id_currency)))
+				|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && !Carrier::checkDeliveryPriceByPrice($carrier->id, $total_package_without_shipping_tax_inc, $id_zone, (int)$this->id_currency)
+				))
 				$shipping_cost += 0;
 			else
 			{
@@ -1004,10 +968,8 @@ class Cart extends CartCore
 
 		// Additional Shipping Cost per product
 		foreach ($products as $product)
-		{
 			if (!$product['is_virtual'])
 				$shipping_cost += $product['additional_shipping_cost'] * $product['cart_quantity'];
-		}
 
 		$shipping_cost = Tools::convertPrice($shipping_cost, Currency::getCurrencyInstance((int)$this->id_currency));
 
@@ -1023,12 +985,10 @@ class Cart extends CartCore
 					$module->id_carrier = $carrier->id;
 
 				if ($carrier->need_range)
-				{
 					if (method_exists($module, 'getPackageShippingCost'))
 						$shipping_cost = $module->getPackageShippingCost($this, $shipping_cost, $products);
 					else
 						$shipping_cost = $module->getOrderShippingCost($this, $shipping_cost);
-				}
 				else
 					$shipping_cost = $module->getOrderShippingCostExternal($this);
 
@@ -1046,7 +1006,8 @@ class Cart extends CartCore
 			}
 		}
 
-		Cache::store($cache_id, (float)Tools::ps_round((float)$shipping_cost, 2));
+		$shipping_cost = (float)Tools::ps_round((float)$shipping_cost, 2);
+		Cache::store($cache_id, $shipping_cost);
 
 		return $shipping_cost;
 	}

@@ -15,6 +15,7 @@
 
 class AdminProductsController extends AdminProductsControllerCore
 {
+
 	public function initFormInformations($product)
 	{
 		if (!$this->default_form_language)
@@ -35,25 +36,24 @@ class AdminProductsController extends AdminProductsControllerCore
 		$product_download = new ProductDownload();
 		if ($id_product_download = $product_download->getIdFromIdProduct($this->getFieldValue($product, 'id')))
 			$product_download = new ProductDownload($id_product_download);
-		$product->{'productDownload'} = $product_download;
 
-		$cache_default_attribute = (int)$this->getFieldValue($product, 'cache_default_attribute');
+		$product->{'productDownload'} = $product_download;
 
 		$product_props = array();
 		// global informations
 		array_push($product_props, 'reference', 'ean13', 'upc',
-		'available_for_order', 'show_price', 'online_only',
-		'id_manufacturer'
+			'available_for_order', 'show_price', 'online_only',
+			'id_manufacturer'
 		);
 
 		// specific / detailled information
 		array_push($product_props,
-		// physical product
-		'width', 'height', 'weight', 'active',
-		// virtual product
-		'is_virtual', 'cache_default_attribute',
-		// customization
-		'uploadable_files', 'text_fields'
+			// physical product
+			'width', 'height', 'weight', 'active',
+			// virtual product
+			'is_virtual', 'cache_default_attribute',
+			// customization
+			'uploadable_files', 'text_fields'
 		);
 		// prices
 		array_push($product_props,
@@ -74,9 +74,12 @@ class AdminProductsController extends AdminProductsControllerCore
 
 		$images = Image::getImages($this->context->language->id, $product->id);
 
-		foreach ($images as $k => $image)
-			$images[$k]['src'] = $this->context->link->getImageLink($product->link_rewrite[$this->context->language->id], $product->id.'-'.$image['id_image'], ImageType::getFormatedName('small')); /*'small_default'*/
-		$data->assign('images', $images);
+		if (is_array($images))
+		{
+			foreach ($images as $k => $image)
+				$images[$k]['src'] = $this->context->link->getImageLink($product->link_rewrite[$this->context->language->id], $product->id.'-'.$image['id_image'], 'small_default');
+			$data->assign('images', $images);
+		}
 		$data->assign('imagesTypes', ImageType::getImagesTypes('products'));
 
 		$product->tags = Tag::getProductTags($product->id);
@@ -90,7 +93,7 @@ class AdminProductsController extends AdminProductsControllerCore
 
 		// TinyMCE
 		$iso_tiny_mce = $this->context->language->iso_code;
-		$iso_tiny_mce = (file_exists(_PS_JS_DIR_.'tiny_mce/langs/'.$iso_tiny_mce.'.js') ? $iso_tiny_mce : 'en');
+		$iso_tiny_mce = (file_exists(_PS_ROOT_DIR_.'/js/tiny_mce/langs/'.$iso_tiny_mce.'.js') ? $iso_tiny_mce : 'en');
 		$data->assign('ad', dirname($_SERVER['PHP_SELF']));
 		$data->assign('iso_tiny_mce', $iso_tiny_mce);
 		$data->assign('check_product_association_ajax', $check_product_association_ajax);
