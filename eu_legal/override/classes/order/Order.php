@@ -23,15 +23,6 @@ class Order extends OrderCore
         parent::$definition['fields']['total_discounts_tax_excl'] = array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat');
 
         parent::__construct($id, $id_lang);
-
-        $is_admin = (is_object(Context::getContext()->controller) && Context::getContext()->controller->controller_type == 'admin');
-        if ($this->id_customer && !$is_admin)
-        {
-            $customer = new Customer((int)($this->id_customer));
-            $this->_taxCalculationMethod = Group::getPriceDisplayMethod((int)$customer->id_default_group);
-        }
-        else
-            $this->_taxCalculationMethod = Group::getDefaultPriceDisplayMethod();
     }
 
 	/*
