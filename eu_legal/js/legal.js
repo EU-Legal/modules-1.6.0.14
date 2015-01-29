@@ -46,6 +46,7 @@ var legal = {
 	    }
 	}
 
+    /*
     var self = this;
     var checkPaymentInterval;
 
@@ -79,6 +80,7 @@ var legal = {
             }
         } , 1500);
 	});
+	*/
 	
 	$(document).on('change', '#revocation_terms_aggreed', function(){
 	    legal.revocationTermsApproved = $(this).is(':checked');

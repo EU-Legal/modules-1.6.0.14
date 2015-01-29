@@ -18,11 +18,15 @@ class Order extends OrderCore
     public function __construct($id = null, $id_lang = null)
     {
         // change validate method of discount fields for 'paymentfee' module
-        parent::$definition['fields']['total_discounts'] = array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat');
-        parent::$definition['fields']['total_discounts_tax_incl'] = array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat');
-        parent::$definition['fields']['total_discounts_tax_excl'] = array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat');
-
         parent::__construct($id, $id_lang);
+
+        $this->fieldsValidate['total_discounts'] = 'isFloat';
+        $this->fieldsValidate['total_discounts_tax_incl'] = 'isFloat';
+        $this->fieldsValidate['total_discounts_tax_excl'] = 'isFloat';
+
+        $this->def['fields']['total_discounts']['validate'] = 'isFloat';
+        $this->def['fields']['total_discounts_tax_incl']['validate'] = 'isFloat';
+        $this->def['fields']['total_discounts_tax_excl']['validate'] = 'isFloat';
     }
 
 	/*
