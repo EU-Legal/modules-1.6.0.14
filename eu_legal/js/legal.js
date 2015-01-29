@@ -51,7 +51,6 @@ var legal = {
 
 	$(document).on('change', '#cgv', function(){
 	    legal.tosApproved = $(this).is(':checked');
-	    legal.updateConfirmButton();
 
 
         checkPaymentInterval = setInterval( function() {
@@ -83,7 +82,6 @@ var legal = {
 	
 	$(document).on('change', '#revocation_terms_aggreed', function(){
 	    legal.revocationTermsApproved = $(this).is(':checked');
-	    legal.updateConfirmButton();
 	});
 	
 	$(document).ready( function(){
@@ -92,8 +90,6 @@ var legal = {
             legal.tosApproved = true;
         else
             legal.tosApproved = cgv.is(":checked");
-
-	    legal.updateConfirmButton();
 	});
 	
 	if (!!$.prototype.fancybox){
@@ -134,8 +130,6 @@ var legal = {
 	    else {
 			legal.paymentChosen = '';
 	    }
-
-	    legal.updateConfirmButton();
 	});
     },
     
@@ -205,18 +199,6 @@ var legal = {
 	if (this.paymentChosen) {
 	    $('input:radio[name=payment_option][id=choose_' + this.paymentChosen + ']').parents('tbody:first').addClass('active');
 	}
-    },
-    
-    updateConfirmButton: function() {
-        $('#confirmOrder').removeAttr('disabled');
-        /*
-        if (this.paymentChosen && this.tosApproved && this.revocationTermsApproved) {
-            $('#confirmOrder').removeAttr('disabled');
-        }
-        else {
-            $('#confirmOrder').attr('disabled', 'disabled');
-        }
-        */
     },
     
     bindAjaxHandlers: function(){
