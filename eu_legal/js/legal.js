@@ -85,7 +85,7 @@ var legal = {
 	});
 	
 	$(document).ready( function(){
-		var cgv = $("#cgv");
+		var cgv = $("#cgv-legal");
 		if (cgv.length == 0)
             legal.tosApproved = true;
         else
