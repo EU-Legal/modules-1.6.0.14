@@ -47,7 +47,7 @@
 			{/if}
 		</span>
         {if isset($product->id_product_attribute) && $product->id_product_attribute > 0}
-            <span class="fromprice-info eu-legal">{l s='From' mod='eu_legal'} </span>
+            <span class="fromprice-info eu-legal">{l s='From' mod='eu_legal'}</span>
         {/if}
 	{else}
 		<span class="tax-shipping-info eu-legal">
@@ -66,7 +66,7 @@
 			{/if}
 		</span>
         {if isset($product.id_product_attribute) && $product.id_product_attribute > 0}
-            <span class="fromprice-info eu-legal">{l s='From' mod='eu_legal'} </span>
+            <span class="fromprice-info eu-legal">{l s='From' mod='eu_legal'}</span>
         {/if}
 	{/if}
 	
