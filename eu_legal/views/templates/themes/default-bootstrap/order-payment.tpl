@@ -40,7 +40,7 @@
 		<div id="opc_payment_methods-overlay" class="opc-overlay" style="display: none;"></div>
 {/if}
 		{if !$opc}
-			{hook h='displayBeforePayment'}
+			{hook h='displayBeforePayment' module="order.php?step=3"}
 		{/if}
 		{if !isset($PS_EU_PAYMENT_API) or !$PS_EU_PAYMENT_API}
 			{include file="$legal_theme_dir/order-summary.tpl"}
