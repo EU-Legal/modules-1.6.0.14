@@ -153,7 +153,7 @@ function displayLegal(view)
 			}
 
             $(element).find('.fromprice-info.eu-legal').each(function(i) {
-                $(this).siblings('.product-price').before($(this));
+                $(this).siblings('.price.product-price').before($(this));
             });
 		});
                 
@@ -175,7 +175,7 @@ function displayLegal(view)
 			}
 
             $(element).find('.fromprice-info.eu-legal').each(function(i) {
-                $(this).siblings('.product-price').before($(this));
+                $(this).siblings('.price.product-price').before($(this));
             });
 
 		});
