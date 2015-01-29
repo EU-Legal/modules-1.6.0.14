@@ -294,7 +294,7 @@ class Order extends OrderCore
 					$paymentVat += (float)$this->total_payment_tax_incl;
 				}
 
-				self::addCompoundTaxesToTaxArray($order_taxes, array($this->total_shipping_tax_incl, $this->total_wrapping_tax_incl, -abs($this->total_discounts_tax_incl), $paymentVat));
+				self::addCompoundTaxesToTaxArray($order_taxes, array($this->total_shipping_tax_incl, $this->total_wrapping_tax_incl, ($this->total_discounts_tax_incl * -1), $paymentVat));
 			}
 		}
 
