@@ -44,43 +44,12 @@ var legal = {
 		    this.toggleChosenForm(true);
 		}
 	    }
-	}
+    }
 
-    /*
-    var self = this;
-    var checkPaymentInterval;
-
-	$(document).on('change', '#cgv', function(){
+	$(document).on('change', '#cgv-legal', function(){
 	    legal.tosApproved = $(this).is(':checked');
-
-
-        checkPaymentInterval = setInterval( function() {
-            if ($('input:radio[name=payment_option]:checked').length == 0) {
-                //console.log(1)
-                var pref = localStorage.getItem('preferredPaymentMethod');
-
-                //console.log(pref);
-
-                if (pref) {
-                    //console.log(2)
-                    var radio = $('#choose_' + pref);
-
-                    if (radio) {
-                        //console.log(3)
-                        radio.prop('checked', true);
-
-                        self.paymentChosen = pref;
-                        self.toggleChosenForm(true);
-                        $.uniform.update("input[name=payment_option]");
-                    }
-                }
-            } else {
-                //console.log(4);
-                clearInterval(checkPaymentInterval);
-            }
-        } , 1500);
 	});
-	*/
+
 	
 	$(document).on('change', '#revocation_terms_aggreed', function(){
 	    legal.revocationTermsApproved = $(this).is(':checked');
