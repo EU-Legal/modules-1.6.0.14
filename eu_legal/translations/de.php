@@ -150,8 +150,8 @@ $_MODULE['<{eu_legal}prestashop>order-carrier_5508a53851720a210e50f7b8a6f66f46']
 $_MODULE['<{eu_legal}prestashop>order-confirm_80f94ab1e96030eaba765084e48b96ca'] = 'Kaufen';
 $_MODULE['<{eu_legal}prestashop>order-opc_a40cab5994f36d4c48103a22ca082e8f'] = 'Ihr Warenkorb';
 $_MODULE['<{eu_legal}prestashop>order-opc_78fa1019f9a9759b45c76e186393756f'] = 'Ihre Bestellung konnte nicht angenommen werden.';
-$_MODULE['<{eu_legal}prestashop>order-opc_f5bf48aa40cad7891eb709fcf1fde128'] = 'Produkt';
-$_MODULE['<{eu_legal}prestashop>order-opc_86024cad1e83101d97359d7351051156'] = 'Produkte';
+$_MODULE['<{eu_legal}prestashop>order-opc_f5bf48aa40cad7891eb709fcf1fde128'] = 'Artikel';
+$_MODULE['<{eu_legal}prestashop>order-opc_86024cad1e83101d97359d7351051156'] = 'Artikel';
 $_MODULE['<{eu_legal}prestashop>order-opc_879f6b8877752685a966564d072f498f'] = 'Ihr Warenkorb ist leer';
 $_MODULE['<{eu_legal}prestashop>order-opc_1f87346a16cf80c372065de3c54c86d9'] = '(inkl. MwSt.)';
 $_MODULE['<{eu_legal}prestashop>order-opc_21034ae6d01a83e702839a72ba8a77b0'] = '(o. MwSt.)';
