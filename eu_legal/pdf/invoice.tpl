@@ -102,17 +102,17 @@
 		<td style="width: 83%; text-align: right">
 			<table style="width: 100%; font-size: 8pt;">
 				<tr style="line-height:4px;">
-					<td style="text-align: left; background-color: #4D4D4D; color: #FFF; padding-left: 10px; font-weight: bold; width: {if !$tax_excluded_display}35%{else}45%{/if}">{l s='Product / Reference' pdf='true'}</td>
+					<td style="text-align: left; background-color: #4D4D4D; color: #FFF; padding-left: 10px; font-weight: bold; width: {if !$tax_excluded_display}31%{else}45%{/if}">{l s='Product / Reference' pdf='true'}</td>
 					<!-- unit price tax excluded is mandatory -->
 					{if !$tax_excluded_display}
-						<td style="background-color: #4D4D4D; color: #FFF; text-align: right; font-weight: bold; width: 20%">{l s='Unit Price' pdf='true'} <br />{l s='(Tax Excl.)' pdf='true'}</td>
+						<td style="background-color: #4D4D4D; color: #FFF; text-align: right; font-weight: bold; width: 22%">{l s='Unit Price' pdf='true'} <br />{l s='(Tax Excl.)' pdf='true'}</td>
 					{/if}
-					<td style="background-color: #4D4D4D; color: #FFF; text-align: right; font-weight: bold; width: 10%">
+					<td style="background-color: #4D4D4D; color: #FFF; text-align: right; font-weight: bold; width: 12%">
 						{l s='Unit Price' pdf='true'}
 						{if $tax_excluded_display}
-							 {l s='(Tax Excl.)' pdf='true'}
+							 <br>{l s='(Tax Excl.)' pdf='true'}
 						{else}
-							 {l s='(Tax Incl.)' pdf='true'}
+							 <br>{l s='(Tax Incl.)' pdf='true'}
 						{/if}
 					</td>
 					<td style="background-color: #4D4D4D; color: #FFF; text-align: right; font-weight: bold; width: 10%; white-space: nowrap;">{l s='Discount' pdf='true'}</td>
@@ -120,9 +120,9 @@
 					<td style="background-color: #4D4D4D; color: #FFF; text-align: right; font-weight: bold; width: {if !$tax_excluded_display}15%{else}25%{/if}">
 						{l s='Total' pdf='true'}
 						{if $tax_excluded_display}
-							{l s='(Tax Excl.)' pdf='true'}
+							<br>{l s='(Tax Excl.)' pdf='true'}
 						{else}
-							{l s='(Tax Incl.)' pdf='true'}
+							<br>{l s='(Tax Incl.)' pdf='true'}
 						{/if}
 					</td>
 				</tr>
