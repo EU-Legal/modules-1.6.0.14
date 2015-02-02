@@ -283,6 +283,12 @@ class EU_Legal extends Module
 			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_WEIGHTS';
 		}
 
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_FROM', 0))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_FROM';
+		}
+
 		if ($return && !Configuration::updateValue('LEGAL_SHOW_FANCY', 1))
 		{
 			$return &= false;
@@ -528,6 +534,7 @@ class EU_Legal extends Module
 		$return &= Configuration::deleteByName('LEGAL_DELIVERY_LATER');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_WEIGHTS');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_FANCY');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_FROM');
 
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -592,6 +599,8 @@ class EU_Legal extends Module
 		$return &= Configuration::updateValue('LEGAL_DELIVERY_LATER', $values);
 
 		$return &= Configuration::updateValue('LEGAL_SHOW_WEIGHTS', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_FROM', 0);
 
 		$return &= Configuration::updateValue('LEGAL_SHOW_FANCY', false);
 
@@ -848,7 +857,11 @@ class EU_Legal extends Module
 						'title' => $this->l('Show fancybox excl. shipping'),
 						'desc' => $this->l('Shows a fancybox on the excl. shipping links.'),
 					),
-
+					'LEGAL_SHOW_FROM' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show \'From\' before price'),
+						'desc' => $this->l('Show \'From\' before price in product list if product has combinations.'),
+					),
 				),
 				'submit' => array(
 					'title' => $this->l('Save general options'),
@@ -1189,6 +1202,8 @@ class EU_Legal extends Module
 			if (!Configuration::updateValue('LEGAL_SHOW_FANCY', (bool)Tools::getValue('LEGAL_SHOW_FANCY')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FANCY';
 
+			if (!Configuration::updateValue('LEGAL_SHOW_FROM', (bool)Tools::getValue('LEGAL_SHOW_FROM')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FROM';
 
 			// CMS IDs festlegen
 			if (!Configuration::updateValue('LEGAL_CMS_ID_LEGAL', (int)Tools::getValue('LEGAL_CMS_ID_LEGAL')))
@@ -2171,14 +2186,27 @@ class EU_Legal extends Module
 			return;
 
 		if ($params['product'] instanceof Product)
+		{
 			$id_product = (int)$params['product']->id;
+			if (isset($params['product']->id_product_attribute))
+				$current_id_product_attribute = (int)$params['product']->id_product_attribute;
+			else
+				$current_id_product_attribute = 0;
+		}
 		else
+		{
 			$id_product = (int)$params['product']['id_product'];
+			if (isset($params['product']['id_product_attribute']))
+				$current_id_product_attribute = (int)$params['product']['id_product_attribute'];
+			else
+				$current_id_product_attribute = 0;
+		}
 
-		$cache_key = $this->name.'_'.$params['type'].'_'.$id_product;
+		$cache_key = $this->name.'_'.$params['type'].'_'.$id_product.'_'.$current_id_product_attribute;
 
 		if (!$this->isCached('displayProductPriceBlock.tpl', $this->getCacheId($cache_key)))
 		{
+
 			$weight = 0;
 			$combination_weight = 0;
 			$id_product = 0;
@@ -2224,6 +2252,7 @@ class EU_Legal extends Module
 				'show_weights' => Configuration::get('LEGAL_SHOW_WEIGHTS'),
 				'show_fancy' => Configuration::get('LEGAL_SHOW_FANCY'),
 				'seo_active' => Configuration::get('PS_REWRITING_SETTINGS'),
+				'show_from' => Configuration::get('LEGAL_SHOW_FROM') & $current_id_product_attribute
 			));
 
 		}
