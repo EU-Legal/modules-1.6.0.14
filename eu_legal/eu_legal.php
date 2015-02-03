@@ -2206,7 +2206,6 @@ class EU_Legal extends Module
 
 		if (!$this->isCached('displayProductPriceBlock.tpl', $this->getCacheId($cache_key)))
 		{
-
 			$weight = 0;
 			$combination_weight = 0;
 			$id_product = 0;
@@ -2252,13 +2251,10 @@ class EU_Legal extends Module
 				'show_weights' => Configuration::get('LEGAL_SHOW_WEIGHTS'),
 				'show_fancy' => Configuration::get('LEGAL_SHOW_FANCY'),
 				'seo_active' => Configuration::get('PS_REWRITING_SETTINGS'),
-				'show_from' => Configuration::get('LEGAL_SHOW_FROM') & $current_id_product_attribute
+				'show_from' => (bool)Configuration::get('LEGAL_SHOW_FROM') && (bool)$current_id_product_attribute
 			));
-
 		}
-
 		return $this->display(__FILE__, 'displayProductPriceBlock.tpl', $this->getCacheId($cache_key));
-
 	}
 
 	public function hookDisplayBeforeShoppingCartBlock($params)
