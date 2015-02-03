@@ -22,7 +22,6 @@ function upgrade_module_1_1_2($eu_legal) {
 	$result &= $eu_legal->addOverride('Order');
 	
 	$result &= $eu_legal->deleteOverrides('OrderDetail');
-	$result &= $eu_legal->addOverride('OrderDetail');
 	
 	$result &= $eu_legal->deleteOverrides('HTMLTemplateInvoice');
 	$result &= $eu_legal->addOverride('HTMLTemplateInvoice');
