@@ -19,6 +19,12 @@ class PaymentModule extends PaymentModuleCore
 	                              $message = null, $extra_vars = array(), $currency_special = null, $dont_touch_amount = false,
 	                              $secure_key = false, Shop $shop = null)
 	{
+		if (self::DEBUG_MODE)
+			PrestaShopLogger::addLog('PaymentModule::validateOrder - Function called', 1, null, 'Cart', (int)$id_cart, true);
+
+		if (!isset($this->context))
+			$this->context = Context::getContext();
+		
 		$compound_taxes = Configuration::get('LEGAL_SHIPTAXMETH');
 
 		$this->context->cart = new Cart($id_cart);

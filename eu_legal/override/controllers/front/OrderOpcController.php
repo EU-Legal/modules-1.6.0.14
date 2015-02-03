@@ -87,7 +87,7 @@ class OrderOpcController extends OrderOpcControllerCore
 						case 'updateTOSStatusAndGetPayments':
 							if (Tools::isSubmit('checked'))
 							{
-								$this->context->cookie->checkedTOS = (int)(Tools::getValue('checked'));
+								$this->context->cookie->checkedTOS = (int)Tools::getValue('checked');
 								die(Tools::jsonEncode(array(
 									'HOOK_TOP_PAYMENT' => Hook::exec('displayPaymentTop'),
 									'HOOK_PAYMENT' => $this->_getPaymentMethods()
@@ -100,13 +100,19 @@ class OrderOpcController extends OrderOpcControllerCore
 							break;
 
 						case 'editCustomer':
-							if (!$this->isLogged)
+							if (!$this->isLogged || !$this->context->customer->is_guest)
 								exit;
+
+							if (Validate::isEmail($email = Tools::getValue('email')) && !empty($email))
+								if (Customer::customerExists($email))
+									$this->errors[] = Tools::displayError('An account using this email address has already been registered.', false);
+
 							if (Tools::getValue('years'))
 								$this->context->customer->birthday = (int)Tools::getValue('years').'-'.(int)Tools::getValue('months').'-'.(int)Tools::getValue('days');
+
 							$_POST['lastname'] = $_POST['customer_lastname'];
 							$_POST['firstname'] = $_POST['customer_firstname'];
-							$this->errors = $this->context->customer->validateController();
+							$this->errors = array_merge($this->errors, $this->context->customer->validateController());
 							$this->context->customer->newsletter = (int)Tools::isSubmit('newsletter');
 							$this->context->customer->optin = (int)Tools::isSubmit('optin');
 							$return = array(
@@ -142,16 +148,16 @@ class OrderOpcController extends OrderOpcControllerCore
 
 								// Wrapping fees
 								$wrapping_fees = $this->context->cart->getGiftWrappingPrice(false);
-								$wrapping_fees_tax_inc = $wrapping_fees = $this->context->cart->getGiftWrappingPrice();
+								$wrapping_fees_tax_inc = $this->context->cart->getGiftWrappingPrice();
 								$return = array_merge(array(
-										'order_opc_adress' => $this->context->smarty->fetch(_PS_THEME_DIR_.'order-address.tpl'),
-										'block_user_info' => (isset($blockUserInfo) ? $blockUserInfo->hookDisplayTop(array()) : ''),
-										'formatedAddressFieldsValuesList' => $formatedAddressFieldsValuesList,
-										'carrier_data' => $this->_getCarrierList(),
-										'HOOK_TOP_PAYMENT' => Hook::exec('displayPaymentTop'),
-										'HOOK_PAYMENT' => $this->_getPaymentMethods(),
-										'no_address' => 0,
-										'gift_price' => Tools::displayPrice(Tools::convertPrice(Product::getTaxCalculationMethod() == 1 ? $wrapping_fees : $wrapping_fees_tax_inc, new Currency((int)($this->context->cookie->id_currency))))
+									'order_opc_adress' => $this->context->smarty->fetch(_PS_THEME_DIR_.'order-address.tpl'),
+									'block_user_info' => (isset($blockUserInfo) ? $blockUserInfo->hookDisplayTop(array()) : ''),
+									'formatedAddressFieldsValuesList' => $formatedAddressFieldsValuesList,
+									'carrier_data' => $this->_getCarrierList(),
+									'HOOK_TOP_PAYMENT' => Hook::exec('displayPaymentTop'),
+									'HOOK_PAYMENT' => $this->_getPaymentMethods(),
+									'no_address' => 0,
+									'gift_price' => Tools::displayPrice(Tools::convertPrice(Product::getTaxCalculationMethod() == 1 ? $wrapping_fees : $wrapping_fees_tax_inc, new Currency((int)$this->context->cookie->id_currency)))
 									),
 									$this->getFormatedSummaryDetail()
 								);
@@ -176,23 +182,23 @@ class OrderOpcController extends OrderOpcControllerCore
 						case 'updateAddressesSelected':
 							if ($this->context->customer->isLogged(true))
 							{
-								$address_delivery = new Address((int)(Tools::getValue('id_address_delivery')));
+								$address_delivery = new Address((int)Tools::getValue('id_address_delivery'));
 								$this->context->smarty->assign('isVirtualCart', $this->context->cart->isVirtualCart());
-								$address_invoice = ((int)(Tools::getValue('id_address_delivery')) == (int)(Tools::getValue('id_address_invoice')) ? $address_delivery : new Address((int)(Tools::getValue('id_address_invoice'))));
+								$address_invoice = ((int)Tools::getValue('id_address_delivery') == (int)Tools::getValue('id_address_invoice') ? $address_delivery : new Address((int)Tools::getValue('id_address_invoice')));
 								if ($address_delivery->id_customer != $this->context->customer->id || $address_invoice->id_customer != $this->context->customer->id)
 									$this->errors[] = Tools::displayError('This address is not yours.');
-								elseif (!Address::isCountryActiveById((int)(Tools::getValue('id_address_delivery'))))
+								elseif (!Address::isCountryActiveById((int)Tools::getValue('id_address_delivery')))
 									$this->errors[] = Tools::displayError('This address is not in a valid area.');
 								elseif (!Validate::isLoadedObject($address_delivery) || !Validate::isLoadedObject($address_invoice) || $address_invoice->deleted || $address_delivery->deleted)
 									$this->errors[] = Tools::displayError('This address is invalid.');
 								else
 								{
-									$this->context->cart->id_address_delivery = (int)(Tools::getValue('id_address_delivery'));
-									$this->context->cart->id_address_invoice = Tools::isSubmit('same') ? $this->context->cart->id_address_delivery : (int)(Tools::getValue('id_address_invoice'));
+									$this->context->cart->id_address_delivery = (int)Tools::getValue('id_address_delivery');
+									$this->context->cart->id_address_invoice = Tools::isSubmit('same') ? $this->context->cart->id_address_delivery : (int)Tools::getValue('id_address_invoice');
 									if (!$this->context->cart->update())
 										$this->errors[] = Tools::displayError('An error occurred while updating your cart.');
 
-									$infos = Address::getCountryAndState((int)($this->context->cart->id_address_delivery));
+									$infos = Address::getCountryAndState((int)$this->context->cart->id_address_delivery);
 									if (isset($infos['id_country']) && $infos['id_country'])
 									{
 										$country = new Country((int)$infos['id_country']);
@@ -231,13 +237,13 @@ class OrderOpcController extends OrderOpcControllerCore
 										$result = $this->_getCarrierList();
 										// Wrapping fees
 										$wrapping_fees = $this->context->cart->getGiftWrappingPrice(false);
-										$wrapping_fees_tax_inc = $wrapping_fees = $this->context->cart->getGiftWrappingPrice();
+										$wrapping_fees_tax_inc = $this->context->cart->getGiftWrappingPrice();
 										$result = array_merge($result, array(
-												'HOOK_TOP_PAYMENT' => Hook::exec('displayPaymentTop'),
-												'HOOK_PAYMENT' => $this->_getPaymentMethods(),
-												'gift_price' => Tools::displayPrice(Tools::convertPrice(Product::getTaxCalculationMethod() == 1 ? $wrapping_fees : $wrapping_fees_tax_inc, new Currency((int)($this->context->cookie->id_currency)))),
-												'carrier_data' => $this->_getCarrierList(),
-												'refresh' => (bool)$this->ajax_refresh),
+											'HOOK_TOP_PAYMENT' => Hook::exec('displayPaymentTop'),
+											'HOOK_PAYMENT' => $this->_getPaymentMethods(),
+											'gift_price' => Tools::displayPrice(Tools::convertPrice(Product::getTaxCalculationMethod() == 1 ? $wrapping_fees : $wrapping_fees_tax_inc, new Currency((int)($this->context->cookie->id_currency)))),
+											'carrier_data' => $this->_getCarrierList(),
+											'refresh' => (bool)$this->ajax_refresh),
 											$this->getFormatedSummaryDetail()
 										);
 										die(Tools::jsonEncode($result));
@@ -328,8 +334,8 @@ class OrderOpcController extends OrderOpcControllerCore
 		$delivery_option = $this->context->cart->getDeliveryOption(null, false, false);
 
 		$wrapping_fees = $this->context->cart->getGiftWrappingPrice(false);
-		$wrapping_fees_tax_inc = $wrapping_fees = $this->context->cart->getGiftWrappingPrice();
-		$oldMessage = Message::getMessageByCartId((int)($this->context->cart->id));
+		$wrapping_fees_tax_inc = $this->context->cart->getGiftWrappingPrice();
+		$oldMessage = Message::getMessageByCartId((int)$this->context->cart->id);
 
 		$free_shipping = false;
 		foreach ($this->context->cart->getCartRules() as $rule)
@@ -345,13 +351,13 @@ class OrderOpcController extends OrderOpcControllerCore
 
 		$vars = array(
 			'free_shipping' => $free_shipping,
-			'checkedTOS' => (int)($this->context->cookie->checkedTOS),
-			'recyclablePackAllowed' => (int)(Configuration::get('PS_RECYCLABLE_PACK')),
-			'giftAllowed' => (int)(Configuration::get('PS_GIFT_WRAPPING')),
-			'cms_id' => (int)(Configuration::get('PS_CONDITIONS_CMS_ID')),
-			'conditions' => (int)(Configuration::get('PS_CONDITIONS')),
+			'checkedTOS' => (int)$this->context->cookie->checkedTOS,
+			'recyclablePackAllowed' => (int)Configuration::get('PS_RECYCLABLE_PACK'),
+			'giftAllowed' => (int)Configuration::get('PS_GIFT_WRAPPING'),
+			'cms_id' => (int)Configuration::get('PS_CONDITIONS_CMS_ID'),
+			'conditions' => (int)Configuration::get('PS_CONDITIONS'),
 			'link_conditions' => $link_conditions,
-			'recyclable' => (int)($this->context->cart->recyclable),
+			'recyclable' => (int)$this->context->cart->recyclable,
 			'gift_wrapping_price' => (float)$wrapping_fees,
 			'total_wrapping_cost' => Tools::convertPrice($wrapping_fees_tax_inc, $this->context->currency),
 			'total_wrapping_tax_exc_cost' => Tools::convertPrice($wrapping_fees, $this->context->currency),
