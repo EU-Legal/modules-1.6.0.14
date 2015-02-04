@@ -202,9 +202,11 @@
 						<td style="line-height:3px;text-align:left;width:60%;vertical-align:top" colspan="{if !$tax_excluded_display}5{else}4{/if}">{$cart_rule.name}</td>
 						<td>
 							{if $tax_excluded_display}
-								{$cart_rule.value_tax_excl * -1}
+                                {displayPrice currency=$order->id_currency price=$cart_rule.value_tax_excl * -1}
+								{*$cart_rule.value_tax_excl * -1*}
 							{else}
-								{$cart_rule.value * -1}
+                                {displayPrice currency=$order->id_currency price=$cart_rule.value * -1}
+								{*$cart_rule.value * -1*}
 							{/if}
 						</td>
 					</tr>
@@ -229,8 +231,7 @@
 					<td style="width: 17%; text-align: right;">{displayPrice currency=$order->id_currency price=$order_invoice->total_products}</td>
 				</tr>
 				{/if}
-
-				{if $order_invoice->total_discount_tax_incl > 0}
+				{if $order_invoice->total_discount_tax_incl != 0}
 				<tr style="line-height:5px;">
 					<td style="text-align: right; font-weight: bold">{l s='Total Vouchers' pdf='true'}</td>
 					<td style="width: 17%; text-align: right;">{displayPrice currency=$order->id_currency price=($order_invoice->total_discount_tax_incl * -1)}</td>
