@@ -103,7 +103,8 @@
 			{math equation="pprice / punit_price"  pprice=$productPrice  punit_price=$product->unit_price_ratio assign=unit_price}
 			<p class="unit-price eu-legal">
 				<span class="unit-price-label">{l s='unit price' mod='eu_legal'}:</span>
-				<span class="unit-price-display">{convertPrice price=$unit_price}</span> {l s='per' mod='eu_legal'} {$product->unity|escape:'html':'UTF-8'}
+				<span class="unit-price-display">{convertPrice price=$unit_price}</span> {l s='per' mod='eu_legal'} {$product->unity|escape:'html':'UTF-8'} 
+				{if $priceDisplay == 1}{l s='tax excl.' mod='eu_legal'}{else}{l s='tax incl.' mod='eu_legal'}{/if}
 			</p>
 		{/if}
 	{else}
@@ -111,7 +112,8 @@
 		{math equation="pprice / punit_price"  pprice=$productPrice  punit_price=$product.unit_price_ratio assign=unit_price}
 		<span class="unit-price eu-legal">
 			<span class="unit-price-label">{l s='unit price' mod='eu_legal'}:</span>
-			<span class="unit-price-display">{convertPrice price=$unit_price}</span> {l s='per' mod='eu_legal'} {$product.unity|escape:'html':'UTF-8'}
+			<span class="unit-price-display">{convertPrice price=$unit_price}</span> {l s='per' mod='eu_legal'} {$product.unity|escape:'html':'UTF-8'} 
+			{if $priceDisplay == 1}{l s='tax excl.' mod='eu_legal'}{else}{l s='tax incl.' mod='eu_legal'}{/if}
 		</span>
 		{/if}
 	{/if}
