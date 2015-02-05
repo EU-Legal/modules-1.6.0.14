@@ -41,7 +41,7 @@ $_MODULE['<{sofortbanking}prestashop>display_form_168aa9fd9741d71ef2aced606cd930
 $_MODULE['<{sofortbanking}prestashop>display_form_6bb58f132c5dad881c5fe82b0244c3ae'] = 'Status für Fehler bei der Bezahlung:';
 $_MODULE['<{sofortbanking}prestashop>display_form_4e892a838f05596ff16e718ebe1ec4d4'] = 'Tragen Sie hier bitte den Status ein, den Ihre Bestellung nach fehlerhafter Bestätigung erhalten soll.';
 $_MODULE['<{sofortbanking}prestashop>display_form_dca1aebd802a73dbb0c3e36635b75e80'] = 'SOFORT Überweisung Logo:';
-$_MODULE['<{sofortbanking}prestashop>display_form_f983b8bc797e7c35373293580ec761f1'] = 'Ja, Logo anzeigen (empfohlen)';
+$_MODULE['<{sofortbanking}prestashop>display_form_f983b8bc797e7c35373293580ec761f1'] = 'Ja, Logo snzeigen (empfohlen)';
 $_MODULE['<{sofortbanking}prestashop>display_form_8250275bc9a53f9352037808e28a557e'] = 'Nein, kein Logo anzeigen';
 $_MODULE['<{sofortbanking}prestashop>display_form_0a70e894e9d995c4435d6038734883d3'] = 'Das Logo von SOFORT Überweisung im Paymentblock einblenden';
 $_MODULE['<{sofortbanking}prestashop>display_form_ea4cb4e53d08ecb249095ae25f33fabb'] = 'Käuferschutz aktivieren:';
