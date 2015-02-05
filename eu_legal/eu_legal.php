@@ -2,8 +2,8 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.0.7
- * @date      : 2015 01 21
+ * @version   : 1.1.2
+ * @date      : 2015 01 30
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
@@ -59,7 +59,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.1.0';
+		$this->version = '1.1.2';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -165,12 +165,8 @@ class EU_Legal extends Module
 		$this->modules = array(
 			'gc_ganalytics' => 'Google Analytics',
 			'trustedshops' => 'Trusted Shops',
-			'bankwire' => 'EU Bankwire',
 			'paypal'=> 'EU Paypal',
-			'cheque' => 'EU Cheque',
-			'hipay' => 'EU Hipay',
 			'moneybookers' => 'EU Moneybookers',
-			'ogone' => 'EU Ogone',
 			'sofortbanking' => 'EU Sofortbanking',
 			'cashondelivery' => 'EU Cash on delivery',
 
@@ -285,6 +281,12 @@ class EU_Legal extends Module
 		{
 			$return &= false;
 			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_WEIGHTS';
+		}
+
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_FROM', 0))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_FROM';
 		}
 
 		if ($return && !Configuration::updateValue('LEGAL_SHOW_FANCY', 1))
@@ -532,6 +534,7 @@ class EU_Legal extends Module
 		$return &= Configuration::deleteByName('LEGAL_DELIVERY_LATER');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_WEIGHTS');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_FANCY');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_FROM');
 
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -596,6 +599,8 @@ class EU_Legal extends Module
 		$return &= Configuration::updateValue('LEGAL_DELIVERY_LATER', $values);
 
 		$return &= Configuration::updateValue('LEGAL_SHOW_WEIGHTS', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_FROM', 0);
 
 		$return &= Configuration::updateValue('LEGAL_SHOW_FANCY', false);
 
@@ -852,7 +857,11 @@ class EU_Legal extends Module
 						'title' => $this->l('Show fancybox excl. shipping'),
 						'desc' => $this->l('Shows a fancybox on the excl. shipping links.'),
 					),
-
+					'LEGAL_SHOW_FROM' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show \'From\' before price'),
+						'desc' => $this->l('Show \'From\' before price in product list if product has combinations.'),
+					),
 				),
 				'submit' => array(
 					'title' => $this->l('Save general options'),
@@ -1193,6 +1202,8 @@ class EU_Legal extends Module
 			if (!Configuration::updateValue('LEGAL_SHOW_FANCY', (bool)Tools::getValue('LEGAL_SHOW_FANCY')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FANCY';
 
+			if (!Configuration::updateValue('LEGAL_SHOW_FROM', (bool)Tools::getValue('LEGAL_SHOW_FROM')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FROM';
 
 			// CMS IDs festlegen
 			if (!Configuration::updateValue('LEGAL_CMS_ID_LEGAL', (int)Tools::getValue('LEGAL_CMS_ID_LEGAL')))
@@ -1658,7 +1669,46 @@ class EU_Legal extends Module
 		return '';
 	}
 
-	public function deleteOverride($classname, $function)
+	public function deleteOverrides($classname) {
+
+		$path = PrestaShopAutoload::getInstance()->getClassPath($classname.'Core');
+
+		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
+			return true;
+
+		// Get a uniq id for the class, because you can override a class (or remove the override) twice in the same session and we need to avoid redeclaration
+		do $uniq = uniqid();
+		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
+
+		$module_file = file($this->getLocalPath().'override/'.$path);
+		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'(\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?)?#i'), array(' ', 'class '.$classname.'Override_remove'.$uniq), implode('', $module_file)));
+		$module_class = new ReflectionClass($classname.'Override_remove'.$uniq);
+
+		foreach ($module_class->getMethods() as $method) {
+			
+			$this->deleteOverrideMethod($classname, $method->getName());
+
+		}
+
+		// Remove properties from override file
+		foreach ($module_class->getProperties() as $property) {
+
+			$this->deleteOverrideProperty($classname, $property->getName());
+
+		}
+
+		// Remove constants from override file
+		foreach ($module_class->getConstants() as $constant => $value) {
+
+			$this->deleteOverrideConstant($classname, $constant);
+			
+		}
+
+		return true;
+
+	}
+
+	public function deleteOverrideMethod($classname, $function)
 	{
 		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
 			return true;
@@ -1668,10 +1718,13 @@ class EU_Legal extends Module
 		if (!is_writable($override_path))
 			return false;
 
+		do $uniq = uniqid();
+		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
+
 		// Make a reflection of the override class and the module override class
 		$override_file = file($override_path);
-		eval(preg_replace(array('#^\s*<\?php#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array('', 'class '.$classname.'OverrideOriginal_delete'), implode('', $override_file)));
-		$override_class = new ReflectionClass($classname.'OverrideOriginal_delete');
+		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal_delete'.$uniq), implode('', $override_file)));
+		$override_class = new ReflectionClass($classname.'OverrideOriginal_delete'.$uniq);
 
 		// Remove methods from override file
 		$override_file = file($override_path);
@@ -1683,9 +1736,11 @@ class EU_Legal extends Module
 		$length = $method->getEndLine() - $method->getStartLine() + 1;
 		array_splice($override_file, $method->getStartLine() - 1, $length, array_pad(array(), $length, '#--remove--#'));
 
+		if (preg_match('/\* module: ('.$this->name.')/ism', $override_file[$method->getStartLine() - 5]))
+			$override_file[$method->getStartLine() - 7] = $override_file[$method->getStartLine() - 6] = $override_file[$method->getStartLine() - 5] = $override_file[$method->getStartLine() - 4] = $override_file[$method->getStartLine() - 3] =  $override_file[$method->getStartLine() - 2] = '#--remove--#';
+		
 		// Rewrite nice code
 		$code = '';
-
 		foreach ($override_file as $line)
 		{
 			if ($line == '#--remove--#')
@@ -1694,35 +1749,129 @@ class EU_Legal extends Module
 			$code .= $line;
 		}
 
-		$code = $this->removeComments($code);
+		$to_delete = preg_match('/<\?(?:php)?\s+class\s+'.$classname.'\s+extends\s+'.$classname.'Core\s*?[{]\s*?[}]/ism', $code);
 
-		file_put_contents($override_path, $code);
+		if ($to_delete)
+			unlink($override_path);
+		else
+			file_put_contents($override_path, $code);
+
+		// Re-generate the class index
+		Tools::generateIndex();
 
 		return true;
 	}
 
-	public function removeComments($str)
+	public function deleteOverrideProperty($classname, $property)
 	{
-		$newStr = '';
+		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
+			return true;
 
-		$commentTokens = array(T_COMMENT);
+		// Check if override file is writable
+		$override_path = _PS_ROOT_DIR_.'/'.PrestaShopAutoload::getInstance()->getClassPath($classname);
+		if (!is_writable($override_path))
+			return false;
 
-		if (defined('T_DOC_COMMENT'))
-			$commentTokens[] = T_DOC_COMMENT;
+		do $uniq = uniqid();
+		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
 
-		$tokens = token_get_all($str);
+		// Make a reflection of the override class and the module override class
+		$override_file = file($override_path);
+		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal_delete'.$uniq), implode('', $override_file)));
+		$override_class = new ReflectionClass($classname.'OverrideOriginal_delete'.$uniq);
 
-		foreach ($tokens as $token)
-		{
-			if (is_array($token))
+		// Remove methods from override file
+		$override_file = file($override_path);
+
+		if (!$override_class->hasProperty($property))
+			return true;
+
+		// Remplacer la ligne de declaration par "remove"
+		foreach ($override_file as $line_number => &$line_content)
+			if (preg_match('/(public|private|protected)\s+(static\s+)?(\$)?'.$property.'/i', $line_content))
 			{
-				if (in_array($token[0], $commentTokens))
-					continue;
-				$newStr .= $token[1];
-			} else
-				$newStr .= $token;
+				if (preg_match('/\* module: ('.$this->name.')/ism', $override_file[$line_number - 5]))
+					$override_file[$line_number - 7] = $override_file[$line_number - 6] = $override_file[$line_number - 5] = $override_file[$line_number - 4] = $override_file[$line_number - 3] =  $override_file[$line_number - 2] = '#--remove--#';
+				$line_content = '#--remove--#';
+				break;
+			}
+
+		// Rewrite nice code
+		$code = '';
+		foreach ($override_file as $line)
+		{
+			if ($line == '#--remove--#')
+				continue;
+
+			$code .= $line;
 		}
-		return $newStr;
+
+		$to_delete = preg_match('/<\?(?:php)?\s+class\s+'.$classname.'\s+extends\s+'.$classname.'Core\s*?[{]\s*?[}]/ism', $code);
+
+		if ($to_delete)
+			unlink($override_path);
+		else
+			file_put_contents($override_path, $code);
+
+		// Re-generate the class index
+		Tools::generateIndex();
+
+		return true;
+	}
+
+
+	public function deleteOverrideConstant($classname, $constant)
+	{
+		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
+			return true;
+
+		// Check if override file is writable
+		$override_path = _PS_ROOT_DIR_.'/'.PrestaShopAutoload::getInstance()->getClassPath($classname);
+		if (!is_writable($override_path))
+			return false;
+
+		do $uniq = uniqid();
+		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
+
+		// Make a reflection of the override class and the module override class
+		$override_file = file($override_path);
+		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal_delete'.$uniq), implode('', $override_file)));
+		$override_class = new ReflectionClass($classname.'OverrideOriginal_delete'.$uniq);
+
+		$override_file = file($override_path);
+
+		if (!$override_class->hasConstant($constant))
+			return true;
+
+		// Remplacer la ligne de declaration par "remove"
+		foreach ($override_file as $line_number => &$line_content)
+			if (preg_match('/(const)\s+'.$constant.'/i', $line_content))
+			{
+				$line_content = '#--remove--#';
+				break;
+			}
+
+		// Rewrite nice code
+		$code = '';
+		foreach ($override_file as $line)
+		{
+			if ($line == '#--remove--#')
+				continue;
+
+			$code .= $line;
+		}
+
+		$to_delete = preg_match('/<\?(?:php)?\s+class\s+'.$classname.'\s+extends\s+'.$classname.'Core\s*?[{]\s*?[}]/ism', $code);
+
+		if ($to_delete)
+			unlink($override_path);
+		else
+			file_put_contents($override_path, $code);
+
+		// Re-generate the class index
+		Tools::generateIndex();
+
+		return true;
 	}
 
 	/* Nur temporär, kann in zukünftigen Versionen entfernt werden. Problem mit Upgrade und Overrides */
@@ -1748,23 +1897,36 @@ class EU_Legal extends Module
 
 			// Make a reflection of the override class and the module override class
 			$override_file = file($override_path);
-			eval(preg_replace(array('#^\s*<\?php#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array('', 'class '.$classname.'OverrideOriginal'.$uniq), implode('', $override_file)));
+			eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal'.$uniq), implode('', $override_file)));
 			$override_class = new ReflectionClass($classname.'OverrideOriginal'.$uniq);
 
 			$module_file = file($this->getLocalPath().'override'.DIRECTORY_SEPARATOR.$path);
-			eval(preg_replace(array('#^\s*<\?php#', '#class\s+'.$classname.'(\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?)?#i'), array('', 'class '.$classname.'Override'.$uniq), implode('', $module_file)));
+			eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'(\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?)?#i'), array(' ', 'class '.$classname.'Override'.$uniq), implode('', $module_file)));
 			$module_class = new ReflectionClass($classname.'Override'.$uniq);
 
 			// Check if none of the methods already exists in the override class
 			foreach ($module_class->getMethods() as $method)
+			{
 				if ($override_class->hasMethod($method->getName()))
+				{
+					$method_override = $override_class->getMethod($method->getName());
+					if (preg_match('/module: (.*)/ism', $override_file[$method_override->getStartLine() - 5], $name) && preg_match('/date: (.*)/ism', $override_file[$method_override->getStartLine() - 4], $date) && preg_match('/version: ([0-9.]+)/ism', $override_file[$method_override->getStartLine() - 3], $version))
+						throw new Exception(sprintf(Tools::displayError('The method %1$s in the class %2$s is already overridden by the module %3$s version %4$s at %5$s.'), $method->getName(), $classname, $name[1], $version[1], $date[1]));
 					throw new Exception(sprintf(Tools::displayError('The method %1$s in the class %2$s is already overridden.'), $method->getName(), $classname));
+				}
+				else
+					$module_file = preg_replace('/(^.*?function\s+'.$method->getName().')/ism', "\n\t/*\n\t* module: ".$this->name."\n\t* date: ".date('Y-m-d H:i:s')."\n\t* version: ".$this->version."\n\t*/\n$1", $module_file);
+			}
 
 			// Check if none of the properties already exists in the override class
 			foreach ($module_class->getProperties() as $property)
+			{
 				if ($override_class->hasProperty($property->getName()))
 					throw new Exception(sprintf(Tools::displayError('The property %1$s in the class %2$s is already defined.'), $property->getName(), $classname));
-
+				else
+					$module_file = preg_replace('/(public|private|protected|const)\s+(static\s+)?(\$?'.$property->getName().')/ism', "\n\t/*\n\t* module: ".$this->name."\n\t* date: ".date('Y-m-d H:i:s')."\n\t* version: ".$this->version."\n\t*/\n$1 $2 $3" , $module_file);
+			}
+			
 			// Check if none of the constants already exists in the override class
 			foreach ($module_class->getConstants() as $constant => $value)
 				if ($override_class->hasConstant($constant))
@@ -1782,9 +1944,24 @@ class EU_Legal extends Module
 			$override_dest = _PS_ROOT_DIR_.DIRECTORY_SEPARATOR.'override'.DIRECTORY_SEPARATOR.$path;
 			if (!is_writable(dirname($override_dest)))
 				throw new Exception(sprintf(Tools::displayError('directory (%s) not writable'), dirname($override_dest)));
-			copy($override_src, $override_dest);
+			$module_file = file($override_src);
+			do $uniq = uniqid();
+			while (class_exists($classname.'OverrideOriginal_remove', false));
+
+			eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'(\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?)?#i'), array(' ', 'class '.$classname.'Override'.$uniq), implode('', $module_file)));
+			$module_class = new ReflectionClass($classname.'Override'.$uniq);
+
+			// Add foreach function a comment with the module name and the module version like it permit us to know wich module do the override and permit an update
+			foreach ($module_class->getMethods() as $method)
+				$module_file = preg_replace('/(^.*?function\s+'.$method->getName().')/ism', "\n\t/*\n\t* module: ".$this->name."\n\t* date: ".date('Y-m-d H:i:s')."\n\t* version: ".$this->version."\n\t*/\n$1", $module_file);
+
+			// same as precedent but for variable
+			foreach ($module_class->getProperties() as $property)
+				$module_file = preg_replace('/(public|private|protected|const)\s+(static\s+)?(\$?'.$property->getName().')/ism', "\n\t/*\n\t* module: ".$this->name."\n\t* date: ".date('Y-m-d H:i:s')."\n\t* version: ".$this->version."\n\t*/\n$1 $2 $3" , $module_file);
+
+			file_put_contents($override_dest, $module_file);
 			// Re-generate the class index
-			PrestaShopAutoload::getInstance()->generateIndex();
+			Tools::generateIndex();
 		}
 		return true;
 	}
@@ -1801,7 +1978,6 @@ class EU_Legal extends Module
 
 		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
 			return true;
-
 		// Check if override file is writable
 		$override_path = _PS_ROOT_DIR_.'/'.PrestaShopAutoload::getInstance()->getClassPath($classname);
 		if (!is_writable($override_path))
@@ -1813,11 +1989,11 @@ class EU_Legal extends Module
 
 		// Make a reflection of the override class and the module override class
 		$override_file = file($override_path);
-		eval(preg_replace(array('#^\s*<\?php#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array('', 'class '.$classname.'OverrideOriginal_remove'.$uniq), implode('', $override_file)));
+		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal_remove'.$uniq), implode('', $override_file)));
 		$override_class = new ReflectionClass($classname.'OverrideOriginal_remove'.$uniq);
 
 		$module_file = file($this->getLocalPath().'override/'.$path);
-		eval(preg_replace(array('#^\s*<\?php#', '#class\s+'.$classname.'(\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?)?#i'), array('', 'class '.$classname.'Override_remove'.$uniq), implode('', $module_file)));
+		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'(\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?)?#i'), array(' ', 'class '.$classname.'Override_remove'.$uniq), implode('', $module_file)));
 		$module_class = new ReflectionClass($classname.'Override_remove'.$uniq);
 
 		// Remove methods from override file
@@ -1835,10 +2011,17 @@ class EU_Legal extends Module
 
 			$override_file_orig = $override_file;
 
-			$orig_content = preg_replace('/\s/', '', implode('', array_splice($override_file, $method->getStartLine() - 1, $length, array_pad(array(), $length, '#--remove--#'))));
-			$module_content = preg_replace('/\s/', '', implode('', array_splice($module_file, $module_method->getStartLine() - 1, $length, array_pad(array(), $length, '#--remove--#'))));
+			$orig_content   = preg_replace("/\s/", '', implode('', array_splice($override_file, $method->getStartLine() - 1,        $length,        array_pad(array(), $length, '#--remove--#')        )));
+			$module_content = preg_replace("/\s/", '', implode('', array_splice($module_file,   $module_method->getStartLine() - 1, $module_length, array_pad(array(), $module_length, '#--remove--#') )));
 
-			if (md5($module_content) != md5($orig_content))
+			$replace = true;
+			if (preg_match('/\* module: ('.$this->name.')/ism', $override_file[$method->getStartLine() - 5]))
+			{
+				$override_file[$method->getStartLine() - 7] = $override_file[$method->getStartLine() - 6] = $override_file[$method->getStartLine() - 5] = $override_file[$method->getStartLine() - 4] = $override_file[$method->getStartLine() - 3] =  $override_file[$method->getStartLine() - 2] = '#--remove--#';
+				$replace = false;
+			}
+
+			if (md5($module_content) != md5($orig_content) && $replace)
 				$override_file = $override_file_orig;
 		}
 
@@ -1850,8 +2033,10 @@ class EU_Legal extends Module
 
 			// Remplacer la ligne de declaration par "remove"
 			foreach ($override_file as $line_number => &$line_content)
-				if (preg_match('/(public|private|protected)\s+(static\s+)?\$'.$property->getName().'/i', $line_content))
+				if (preg_match('/(public|private|protected)\s+(static\s+)?(\$)?'.$property->getName().'/i', $line_content))
 				{
+					if (preg_match('/\* module: ('.$this->name.')/ism', $override_file[$line_number - 5]))
+						$override_file[$line_number - 7] = $override_file[$line_number - 6] = $override_file[$line_number - 5] = $override_file[$line_number - 4] = $override_file[$line_number - 3] =  $override_file[$line_number - 2] = '#--remove--#';
 					$line_content = '#--remove--#';
 					break;
 				}
@@ -1882,12 +2067,16 @@ class EU_Legal extends Module
 			$code .= $line;
 		}
 
-		$code = $this->removeComments($code);
+		$to_delete = preg_match('/<\?(?:php)?\s+class\s+'.$classname.'\s+extends\s+'.$classname.'Core\s*?[{]\s*?[}]/ism', $code);
 
-		file_put_contents($override_path, $code);
+		if ($to_delete)
+			unlink($override_path);
+		else
+			file_put_contents($override_path, $code);
 
 		// Re-generate the class index
-		PrestaShopAutoload::getInstance()->generateIndex();
+		Tools::generateIndex();
+
 		return true;
 	}
 
@@ -1997,11 +2186,23 @@ class EU_Legal extends Module
 			return;
 
 		if ($params['product'] instanceof Product)
+		{
 			$id_product = (int)$params['product']->id;
+			if (isset($params['product']->id_product_attribute))
+				$current_id_product_attribute = (int)$params['product']->id_product_attribute;
+			else
+				$current_id_product_attribute = 0;
+		}
 		else
+		{
 			$id_product = (int)$params['product']['id_product'];
+			if (isset($params['product']['id_product_attribute']))
+				$current_id_product_attribute = (int)$params['product']['id_product_attribute'];
+			else
+				$current_id_product_attribute = 0;
+		}
 
-		$cache_key = $this->name.'_'.$params['type'].'_'.$id_product;
+		$cache_key = $this->name.'_'.$params['type'].'_'.$id_product.'_'.$current_id_product_attribute;
 
 		if (!$this->isCached('displayProductPriceBlock.tpl', $this->getCacheId($cache_key)))
 		{
@@ -2050,12 +2251,10 @@ class EU_Legal extends Module
 				'show_weights' => Configuration::get('LEGAL_SHOW_WEIGHTS'),
 				'show_fancy' => Configuration::get('LEGAL_SHOW_FANCY'),
 				'seo_active' => Configuration::get('PS_REWRITING_SETTINGS'),
+				'show_from' => (bool)Configuration::get('LEGAL_SHOW_FROM') && (bool)$current_id_product_attribute
 			));
-
 		}
-
 		return $this->display(__FILE__, 'displayProductPriceBlock.tpl', $this->getCacheId($cache_key));
-
 	}
 
 	public function hookDisplayBeforeShoppingCartBlock($params)

@@ -15,11 +15,17 @@
 $(document).ready(function(){
 	
 	/* category pages => list and grid view */
-	if (typeof page_name != 'undefined' && !in_array(page_name, ['product']))
-		bindGridLegal(); 
-	
+	if (typeof page_name != 'undefined' && !in_array(page_name, ['product'])) {
+		bindGridLegal();
+
+    if (page_name == 'category') {
+        $(document).ajaxComplete(function() {
+            bindGridLegal();
+        });
+    }
+
 	/* product pages combinations/attributes */
-	else {
+    } else {
 		
 		$(document).on('click', '.color_pick', function(e){
 			findCombinationLegal();
@@ -153,7 +159,7 @@ function displayLegal(view)
 			}
 
             $(element).find('.fromprice-info.eu-legal').each(function(i) {
-                $(this).siblings('.product-price').before($(this));
+                $(this).siblings('.price.product-price').before($(this));
             });
 		});
                 
@@ -175,7 +181,7 @@ function displayLegal(view)
 			}
 
             $(element).find('.fromprice-info.eu-legal').each(function(i) {
-                $(this).siblings('.product-price').before($(this));
+                $(this).siblings('.price.product-price').before($(this));
             });
 
 		});

@@ -141,48 +141,7 @@
 							<span id="total_price">{displayPrice price=$total_price}</span>
 						</td>
 					</tr>
-				{else}
-				<tr class="cart_total_price">
-					{if $voucherAllowed}
-						<td colspan="2" id="cart_voucher" class="cart_voucher">
-							<div id="cart_voucher" class="table_block">
-								{if isset($errors_discount) && $errors_discount}
-									<ul class="alert alert-danger">
-									{foreach from=$errors_discount key=k item=error}
-										<li>{$error|escape:'html':'UTF-8'}</li>
-									{/foreach}
-									</ul>
-								{/if}
-								{if $voucherAllowed}
-									<form action="{if $opc}{$link->getPageLink('order-opc', true)}{else}{$link->getPageLink('order', true)}{/if}" method="post" id="voucher">
-										<fieldset>
-											<h4>{l s='Vouchers' mod='eu_legal'}</h4>
-											<input type="text" id="discount_name" class="form-control" name="discount_name" value="{if isset($discount_name) && $discount_name}{$discount_name}{/if}" />
-											<input type="hidden" name="submitDiscount" />
-											<button type="submit" name="submitAddDiscount" class="button btn btn-default button-small"><span>{l s='ok' mod='eu_legal'}</span></button>
-											{if $displayVouchers}
-												<p id="title" class="title_offers">{l s='Take advantage of our offers:' mod='eu_legal'}</p>
-												<div id="display_cart_vouchers">
-												{foreach from=$displayVouchers item=voucher}
-													<span onclick="$('#discount_name').val('{$voucher.name|escape:'htmlall'}');return false;" class="voucher_name">{$voucher.name|escape:'htmlall'}</span> - {$voucher.description|escape:'htmlall'} <br />
-												{/foreach}
-												</div>
-											{/if}
-										</fieldset>
-									</form>
-								{/if}
-							</div>
-						</td>
-					{/if}
-					<td colspan="{if !$voucherAllowed}3{else}2{/if}" class="text-right total_price_container">
-						<span>{l s='Total' mod='eu_legal'}</span>
-					</td>
-					<td colspan="1" class="price total_price_container" id="total_price_container">
-						<span id="total_price">{displayPrice price=$total_price_without_tax}</span>
-					</td>
-				</tr>
 				{/if}
-				
 				<tr>
 					<td colspan="7">{hook h="displayAfterShoppingCartBlock"}</td>
 				</tr>
