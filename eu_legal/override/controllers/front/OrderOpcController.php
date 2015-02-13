@@ -316,7 +316,7 @@ class OrderOpcController extends OrderOpcControllerCore
 		parent::_assignCarrier();
 
 		if (!$this->isLogged)
-			$this->context->smarty->assign('PS_EU_PAYMENT_API', Configuration::get('PS_EU_PAYMENT_API') ? true : false);
+			$this->context->smarty->assign('PS_EU_PAYMENT_API', (bool)Configuration::get('PS_EU_PAYMENT_API'));
 	}
 
 	protected function _getCarrierList()
