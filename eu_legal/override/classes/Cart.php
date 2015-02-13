@@ -576,24 +576,8 @@ class Cart extends CartCore
 		$wrapping_fees = (float)Configuration::get('PS_GIFT_WRAPPING_PRICE');
 		if ($with_taxes && $wrapping_fees > 0)
 		{
-			if (!isset($address[$this->id]))
-			{
-				if ($id_address === null)
-					$id_address = (int)$this->{Configuration::get('PS_TAX_ADDRESS_TYPE')};
-				try
-				{
-					$address[$this->id] = Address::initialize($id_address);
-				}
-				catch (Exception $e)
-				{
-					$address[$this->id] = new Address();
-					$address[$this->id]->id_country = Configuration::get('PS_COUNTRY_DEFAULT');
-				}
-			}
-
-			$tax_manager = TaxManagerFactory::getManager($address[$this->id], (int)Configuration::get('PS_GIFT_WRAPPING_TAX_RULES_GROUP'));
-			$tax_calculator = $tax_manager->getTaxCalculator();
-			$wrapping_fees = $tax_calculator->addTaxes($wrapping_fees);
+			$tax_rate = Cart::getTaxesAverageUsed((int)($this->id));
+-			$wrapping_fees = $wrapping_fees * (1 + ($tax_rate / 100));
 		}
 
 		return $wrapping_fees;
