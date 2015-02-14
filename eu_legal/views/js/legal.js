@@ -176,7 +176,7 @@ function displayLegal(view)
 			}
 			/* add delivery-info after right-block availability */
 			var deliveryinfo = $(element).find('.delivery-info').html();
-			if (deliveryinfo != null) { 
+			if($(element).find('.right-block .delivery-info').length <= 0 && deliveryinfo != null) {
 				$(element).find('.availability').after('<span class="delivery-info eu-legal">'+deliveryinfo+'</span>');
 			}
 
