@@ -74,14 +74,14 @@
 					<th class="cart_description item">{l s='Description' mod='eu_legal'}</th>
 					{if $PS_STOCK_MANAGEMENT}
 						{assign var='col_span_subtotal' value='3'}
-						<th class="cart_avail item">{l s='Avail.' mod='eu_legal'}</th>
+						<th class="cart_avail item text-center">{l s='Avail.' mod='eu_legal'}</th>
 					{else}
 						{assign var='col_span_subtotal' value='2'}
 					{/if}
-					<th class="cart_unit item">{l s='Unit price' mod='eu_legal'}</th>
-					<th class="cart_quantity item">{l s='Qty' mod='eu_legal'}</th>
-					<th class="cart_total item">{l s='Total' mod='eu_legal'}</th>
+					<th class="cart_unit item text-right">{l s='Unit price' mod='eu_legal'}</th>
+					<th class="cart_quantity item text-center">{l s='Qty' mod='eu_legal'}</th>
 					<th class="cart_delete last_item">&nbsp;</th>
+					<th class="cart_total item text-right">{l s='Total' mod='eu_legal'}</th>
 				</tr>
 			</thead>
 			<tfoot>
