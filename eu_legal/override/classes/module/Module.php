@@ -140,7 +140,7 @@ class Module extends ModuleCore
 					// If (false) is a trick to not load the class with "eval".
 					// This way require_once will works correctly
 					if (eval('if (false){	'.$file.' }') !== false)
-						require_once(_PS_MODULE_DIR_.$module.'/'.$module.'.php');
+						require_once( _PS_MODULE_DIR_.$module.'/'.$module.'.php' );
 					else
 						$errors[] = sprintf(Tools::displayError('%1$s (parse error in %2$s)'), $module, substr($filepath, strlen(_PS_ROOT_DIR_)));
 				}
@@ -179,7 +179,7 @@ class Module extends ModuleCore
 					$item->url = isset($tmp_module->url) ? $tmp_module->url : null;
 					$item->is_eu_compatible = isset($tmp_module->is_eu_compatible) ? $tmp_module->is_eu_compatible : 0;
 
-					$item->onclick_option = method_exists($module, 'onclickOption') ? true : false;
+					$item->onclick_option  = method_exists($module, 'onclickOption') ? true : false;
 					if ($item->onclick_option)
 					{
 						$href = Context::getContext()->link->getAdminLink('Module', true).'&module_name='.$tmp_module->name.'&tab_module='.$tmp_module->tab;
@@ -217,9 +217,12 @@ class Module extends ModuleCore
 			$results = Db::getInstance()->executeS($sql);
 			foreach ($results as $result)
 			{
-				$moduleCursor = $modulesNameToCursor[$result['name']];
-				$moduleCursor->id = $result['id_module'];
-				$moduleCursor->active = ($result['total'] == count($list)) ? 1 : 0;
+				if (isset($modulesNameToCursor[Tools::strtolower($result['name'])]))
+				{
+					$module_cursor = $modulesNameToCursor[Tools::strtolower($result['name'])];
+					$module_cursor->id = (int)$result['id_module'];
+					$module_cursor->active = ($result['total'] == count($list)) ? 1 : 0;
+				}
 			}
 		}
 
@@ -284,11 +287,11 @@ class Module extends ModuleCore
 							$item->url = isset($modaddons->url) ? $modaddons->url : null;
 							if (isset($modaddons->img))
 							{
-								if (!file_exists(_PS_TMP_IMG_DIR_.md5($modaddons->name).'.jpg'))
-									if (!file_put_contents(_PS_TMP_IMG_DIR_.md5($modaddons->name).'.jpg', Tools::file_get_contents($modaddons->img)))
-										copy(_PS_IMG_DIR_.'404.gif', _PS_TMP_IMG_DIR_.md5($modaddons->name).'.jpg');
-								if (file_exists(_PS_TMP_IMG_DIR_.md5($modaddons->name).'.jpg'))
-									$item->image = '../img/tmp/'.md5($modaddons->name).'.jpg';
+								if (!file_exists(_PS_TMP_IMG_DIR_.md5((int)$modaddons->id.'-'.$modaddons->name).'.jpg'))
+									if (!file_put_contents(_PS_TMP_IMG_DIR_.md5((int)$modaddons->id.'-'.$modaddons->name).'.jpg', Tools::file_get_contents($modaddons->img)))
+										copy(_PS_IMG_DIR_.'404.gif', _PS_TMP_IMG_DIR_.md5((int)$modaddons->id.'-'.$modaddons->name).'.jpg');
+								if (file_exists(_PS_TMP_IMG_DIR_.md5((int)$modaddons->id.'-'.$modaddons->name).'.jpg'))
+									$item->image = '../img/tmp/'.md5((int)$modaddons->id.'-'.$modaddons->name).'.jpg';
 							}
 							if ($item->type == 'addonsMustHave')
 							{
@@ -374,7 +377,7 @@ class Module extends ModuleCore
 </module>';
 		if (is_writable(_PS_MODULE_DIR_.$this->name.'/'))
 		{
-			$iso = Tools::substr(Context::getContext()->language->iso_code, 0, 2);
+			$iso = substr(Context::getContext()->language->iso_code, 0, 2);
 			$file = _PS_MODULE_DIR_.$this->name.'/'.($iso == 'en' ? 'config.xml' : 'config_'.$iso.'.xml');
 			if (!@file_put_contents($file, $xml))
 				if (!is_writable($file))

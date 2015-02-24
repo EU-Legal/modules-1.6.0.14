@@ -1,15 +1,15 @@
 {**
 * EU Legal - Better security for German and EU merchants.
 *
-* @version   : 1.0.2
-* @date      : 2014 08 26
+* @version   : 1.2.0
+* @date      : 2015 02 25
 * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
-* @copyright : 2014 Onlineshop-Module.de | 2014 Silbersaiten.de
+* @copyright : 2015 Onlineshop-Module.de | 2014 Silbersaiten.de
 * @contact   : info@onlineshop-module.de | info@silbersaiten.de
 * @homepage  : www.onlineshop-module.de | www.silbersaiten.de
 * @license   : http://opensource.org/licenses/osl-3.0.php
 * @changelog : see changelog.txt
-* @compatibility : PS == 1.6.0.9
+* @compatibility : PS == 1.6.0.12
 *}
 {if !$opc}
 	{capture name=path}{l s='Shipping:' mod='eu_legal'}{/capture}
@@ -18,7 +18,7 @@
 		<h1 class="page-heading">{l s='Shipping:' mod='eu_legal'}</h1>
 		{include file="$tpl_dir./order-steps.tpl"}
 		{include file="$tpl_dir./errors.tpl"}
-		<form id="form" action="{$link->getPageLink('order', true, NULL, "multi-shipping={$multi_shipping}")|escape:'html':'UTF-8'}" method="post" name="carrier_area">
+		<form id="form" action="{$link->getPageLink('order', true, NULL, "{if $multi_shipping}multi-shipping={$multi_shipping}{/if}")|escape:'html':'UTF-8'}" method="post" name="carrier_area">
 {else}
 	<div id="carrier_area" class="opc-main-block">
 		<h1 class="page-heading step-num"><span>2</span> {l s='Delivery methods' mod='eu_legal'}</h1>
@@ -37,14 +37,6 @@
 		{if isset($isVirtualCart) && $isVirtualCart}
 			<p class="alert alert-warning">{l s='No carrier is needed for this order.' mod='eu_legal'}</p>
 		{else}
-			{if $recyclablePackAllowed}
-				<div class="checkbox">
-					<label for="recyclable">
-						<input type="checkbox" name="recyclable" id="recyclable" value="1" {if $recyclable == 1}checked="checked"{/if} />
-						{l s='I would like to receive my order in recycled packaging.' mod='eu_legal'}.
-					</label>
-				</div>
-			{/if}
 			<div class="delivery_options_address">
 				{if isset($delivery_option_list)}
 					{foreach $delivery_option_list as $id_address => $option_list}
@@ -59,7 +51,7 @@
 							{foreach $option_list as $key => $option}
 								<div class="delivery_option {if ($option@index % 2)}alternate_{/if}item">
 									<div>
-										<table class="resume table table-bordered{if !$option.unique_carrier} not-displayable{/if}">
+										<table class="resume table table-bordered{if !$option.unique_carrier} hide{/if}">
 											<tr>
 												<td class="delivery_option_radio">
 													<input id="delivery_option_{$id_address|intval}_{$option@index}" class="delivery_option_radio" type="radio" name="delivery_option[{$id_address|intval}]" data-key="{$key}" data-id_address="{$id_address|intval}" value="{$key}"{if isset($delivery_option[$id_address]) && $delivery_option[$id_address] == $key} checked="checked"{/if} />
@@ -80,20 +72,19 @@
 															<strong>{$carrier.instance->name|escape:'htmlall':'UTF-8'}</strong>
 														{/foreach}
 														{if isset($carrier.instance->delay[$cookie->id_lang])}
-															{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
+															<br />{l s='Delivery time:'}&nbsp;{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
 														{/if}
 													{/if}
 													{if count($option_list) > 1}
+													<br />
 														{if $option.is_best_grade}
 															{if $option.is_best_price}
-																{l s='The best price and speed' mod='eu_legal'}
+																<span class="best_grade best_grade_price best_grade_speed">{l s='The best price and speed' mod='eu_legal'}</span>
 															{else}
-																{l s='The fastest' mod='eu_legal'}
+																<span class="best_grade best_grade_speed">{l s='The fastest' mod='eu_legal'}</span>
 															{/if}
-														{else}
-															{if $option.is_best_price}
-																{l s='The best price' mod='eu_legal'}
-															{/if}
+														{else if $option.is_best_price}
+																<span class="best_grade best_grade_price">{l s='The best price' mod='eu_legal'}</span>
 														{/if}
 													{/if}
 												</td>
@@ -117,7 +108,7 @@
 											</tr>
 										</table>
 										{if !$option.unique_carrier}
-											<table class="delivery_option_carrier{if isset($delivery_option[$id_address]) && $delivery_option[$id_address] == $key} selected{/if} resume table table-bordered{if $option.unique_carrier} not-displayable{/if}">
+											<table class="delivery_option_carrier{if isset($delivery_option[$id_address]) && $delivery_option[$id_address] == $key} selected{/if} resume table table-bordered{if $option.unique_carrier} hide{/if}">
 												<tr>
 													{if !$option.unique_carrier}
 														<td rowspan="{$option.carrier_list|@count}" class="delivery_option_radio first_item">
@@ -125,22 +116,26 @@
 														</td>
 													{/if}
 													{assign var="first" value=current($option.carrier_list)}
-													<td class="delivery_option_logo{if $first.product_list[0].carrier_list[0] eq 0} not-displayable{/if}">
+													<td class="delivery_option_logo{if $first.product_list[0].carrier_list[0] eq 0} hide{/if}">
 														{if $first.logo}
 															<img src="{$first.logo|escape:'htmlall':'UTF-8'}" alt="{$first.instance->name|escape:'htmlall':'UTF-8'}"/>
 														{else if !$option.unique_carrier}
 															{$first.instance->name|escape:'htmlall':'UTF-8'}
 														{/if}
 													</td>
-													<td class="{if $option.unique_carrier}first_item{/if}{if $first.product_list[0].carrier_list[0] eq 0} not-displayable{/if}">
+													<td class="{if $option.unique_carrier}first_item{/if}{if $first.product_list[0].carrier_list[0] eq 0} hide{/if}">
 														<input type="hidden" value="{$first.instance->id|intval}" name="id_carrier" />
 														{if isset($first.instance->delay[$cookie->id_lang])}
-															<i class="icon-info-sign"></i>{$first.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
-															{if count($first.product_list) <= 1}
-																({l s='Product concerned:' mod='eu_legal'}
-															{else}
-																({l s='Products concerned:' mod='eu_legal'}
-															{/if}
+															<i class="icon-info-sign"></i>
+															{strip}
+																{$first.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
+																&nbsp;
+																{if count($first.product_list) <= 1}
+																	({l s='Product concerned:' mod='eu_legal'}
+																{else}
+																	({l s='Products concerned:' mod='eu_legal'}
+																{/if}
+															{/strip}
 															{foreach $first.product_list as $product}
 																{if $product@index == 4}
 																	<acronym title="
@@ -189,59 +184,62 @@
 														</div>
 													</td>
 												</tr>
-												<tr>
-													<td class="delivery_option_logo{if $carrier.product_list[0].carrier_list[0] eq 0} not-displayable{/if}">
-														{foreach $option.carrier_list as $carrier}
-															{if $carrier@iteration != 1}
-																{if $carrier.logo}
-																	<img src="{$carrier.logo|escape:'htmlall':'UTF-8'}" alt="{$carrier.instance->name|escape:'htmlall':'UTF-8'}"/>
-																{else if !$option.unique_carrier}
-																	{$carrier.instance->name|escape:'htmlall':'UTF-8'}
-																{/if}
+												{foreach $option.carrier_list as $carrier}
+													{if $carrier@iteration != 1}
+													<tr>
+														<td class="delivery_option_logo{if $carrier.product_list[0].carrier_list[0] eq 0} hide{/if}">
+															{if $carrier.logo}
+																<img src="{$carrier.logo|escape:'htmlall':'UTF-8'}" alt="{$carrier.instance->name|escape:'htmlall':'UTF-8'}"/>
+															{else if !$option.unique_carrier}
+																{$carrier.instance->name|escape:'htmlall':'UTF-8'}
 															{/if}
-														{/foreach}
-													</td>
-													<td class="{if $option.unique_carrier} first_item{/if}{if $carrier.product_list[0].carrier_list[0] eq 0} not-displayable{/if}">
-														<input type="hidden" value="{$first.instance->id|intval}" name="id_carrier" />
-														{if isset($carrier.instance->delay[$cookie->id_lang])}
-															<i class="icon-info-sign"></i>
-															{$first.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
-															{if count($carrier.product_list) <= 1}
+														</td>
+														<td class="{if $option.unique_carrier} first_item{/if}{if $carrier.product_list[0].carrier_list[0] eq 0} hide{/if}">
+															<input type="hidden" value="{$first.instance->id|intval}" name="id_carrier" />
+															{if isset($carrier.instance->delay[$cookie->id_lang])}
+																<i class="icon-info-sign"></i>
+																{strip}
+																	{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
+																	&nbsp;
+																	{if count($first.product_list) <= 1}
 																({l s='Product concerned:' mod='eu_legal'}
-															{else}
-																({l s='Products concerned:' mod='eu_legal'}
-															{/if}
-															{foreach $carrier.product_list as $product}
-																{if $product@index == 4}
-																	<acronym title="
-																{/if}
-																{strip}
-																	{if $product@index >= 4}
-																		{$product.name|escape:'htmlall':'UTF-8'}
-																		{if isset($product.attributes) && $product.attributes}
-																			{$product.attributes|escape:'htmlall':'UTF-8'}
-																		{/if}
-																		{if !$product@last}
-																			,&nbsp;
-																		{else}
-																			">&hellip;</acronym>)
-																		{/if}
 																	{else}
-																		{$product.name|escape:'htmlall':'UTF-8'}
-																		{if isset($product.attributes) && $product.attributes}
-																			{$product.attributes|escape:'htmlall':'UTF-8'}
-																		{/if}
-																		{if !$product@last}
-																			,&nbsp;
-																		{else}
-																			)
-																		{/if}
+																({l s='Products concerned:' mod='eu_legal'}
 																	{/if}
-																{strip}
-															{/foreach}
-														{/if}
-													</td>
-												</tr>
+																{/strip}
+																{foreach $carrier.product_list as $product}
+																	{if $product@index == 4}
+																		<acronym title="
+																	{/if}
+																	{strip}
+																		{if $product@index >= 4}
+																			{$product.name|escape:'htmlall':'UTF-8'}
+																			{if isset($product.attributes) && $product.attributes}
+																				{$product.attributes|escape:'htmlall':'UTF-8'}
+																			{/if}
+																			{if !$product@last}
+																				,&nbsp;
+																			{else}
+																				">&hellip;</acronym>)
+																			{/if}
+																		{else}
+																			{$product.name|escape:'htmlall':'UTF-8'}
+																			{if isset($product.attributes) && $product.attributes}
+																				{$product.attributes|escape:'htmlall':'UTF-8'}
+																			{/if}
+																			{if !$product@last}
+																				,&nbsp;
+																			{else}
+																				)
+																			{/if}
+																		{/if}
+																	{strip}
+																{/foreach}
+															{/if}
+														</td>
+													</tr>
+													{/if}
+												{/foreach}
 											</table>
 										{/if}
 									</div>
@@ -269,6 +267,7 @@
 						{/foreach}
 					{/if}
 				</div> <!-- end delivery_options_address -->
+				<div id="extra_carrier" style="display: none;"></div>
 				{if $opc}
 					<p class="carrier_title">{l s='Leave a message' mod='eu_legal'}</p>
 					<div>
@@ -277,46 +276,55 @@
 							{if isset($oldMessage)}{$oldMessage|escape:'html':'UTF-8'}{/if}
 						{/strip}</textarea>
 					</div>
-					<hr style="" />
 				{/if}
-				<div id="extra_carrier" style="display: none;"></div>
-					{if $giftAllowed}
-						<p class="carrier_title">{l s='Gift' mod='eu_legal'}</p>
-						<p class="checkbox gift">
-							<input type="checkbox" name="gift" id="gift" value="1" {if $cart->gift == 1}checked="checked"{/if} />
-							<label for="gift">
-								{l s='I would like my order to be gift wrapped.' mod='eu_legal'}
-								{if $gift_wrapping_price > 0}
-									&nbsp;<i>({l s='Additional cost of' mod='eu_legal'}
-									<span class="price" id="gift-price">
-										{if $priceDisplay == 1}
-											{convertPrice price=$total_wrapping_tax_exc_cost}
-										{else}
-											{convertPrice price=$total_wrapping_cost}
-										{/if}
-									</span>
-									{if $use_taxes && $display_tax_label}
-										{if $priceDisplay == 1}
-											{l s='(tax excl.)' mod='eu_legal'}
-										{else}
-											{l s='(tax incl.)' mod='eu_legal'}
-										{/if}
-									{/if})
-									</i>
-								{/if}
-							</label>
-						</p>
-						<p id="gift_div">
-							<label for="gift_message">{l s='If you\'d like, you can add a note to the gift:' mod='eu_legal'}</label>
-							<textarea rows="2" cols="120" id="gift_message" class="form-control" name="gift_message">{$cart->gift_message|escape:'html':'UTF-8'}</textarea>
-						</p>
-						{if $opc}
-							<hr style="" />
-						{/if}
+				{if $recyclablePackAllowed}
+					<div class="checkbox recyclable">
+						<label for="recyclable">
+							<input type="checkbox" name="recyclable" id="recyclable" value="1"{if $recyclable == 1} checked="checked"{/if} />
+							{l s='I would like to receive my order in recycled packaging.'}
+						</label>
+					</div>
+				{/if}
+				{if $giftAllowed}
+					{if $opc}
+						<hr style="" />
 					{/if}
+					<p class="carrier_title">{l s='Gift' mod='eu_legal'}</p>
+					<p class="checkbox gift">
+						<input type="checkbox" name="gift" id="gift" value="1"{if $cart->gift == 1} checked="checked"{/if} />
+						<label for="gift">
+							{l s='I would like my order to be gift wrapped.' mod='eu_legal'}
+							{if $gift_wrapping_price > 0}
+								&nbsp;<i>({l s='Additional cost of' mod='eu_legal'}
+								<span class="price" id="gift-price">
+									{if $priceDisplay == 1}
+										{convertPrice price=$total_wrapping_tax_exc_cost}
+									{else}
+										{convertPrice price=$total_wrapping_cost}
+									{/if}
+								</span>
+								{if $use_taxes && $display_tax_label}
+									{if $priceDisplay == 1}
+										{l s='(tax excl.)' mod='eu_legal'}
+									{else}
+										{l s='(tax incl.)' mod='eu_legal'}
+									{/if}
+								{/if})
+								</i>
+							{/if}
+						</label>
+					</p>
+					<p id="gift_div">
+						<label for="gift_message">{l s='If you\'d like, you can add a note to the gift:' mod='eu_legal'}</label>
+						<textarea rows="2" cols="120" id="gift_message" class="form-control" name="gift_message">{$cart->gift_message|escape:'html':'UTF-8'}</textarea>
+					</p>
+				{/if}
 				{/if}
 			{/if}
 			{if (!isset($PS_EU_PAYMENT_API) || !$PS_EU_PAYMENT_API) && $conditions AND $cms_id}
+				{if $opc}
+					<hr style="" />
+				{/if}
 				<p class="carrier_title">{l s='Terms of service' mod='eu_legal'}</p>
 				<p class="checkbox">
 					<input type="checkbox" name="cgv" id="cgv" value="1" {if $checkedTOS}checked="checked"{/if} />
@@ -328,21 +336,21 @@
 		{if !$opc}
 				<p class="cart_navigation clearfix">
 					<input type="hidden" name="step" value="3" />
-					<input type="hidden" name="back" value="{$back|escape:'htmlall'}" />
+					<input type="hidden" name="back" value="{$back}" />
 					{if !$is_guest}
 						{if $back}
-							<a href="{$link->getPageLink('order', true, NULL, "step=1&back={$back}&multi-shipping={$multi_shipping}")|escape:'html':'UTF-8'}" title="{l s='Previous' mod='eu_legal'}" class="button-exclusive btn btn-default">
+							<a href="{$link->getPageLink('order', true, NULL, "step=1&back={$back}{if $multi_shipping}&multi-shipping={$multi_shipping}{/if}")|escape:'html':'UTF-8'}" title="{l s='Previous' mod='eu_legal'}" class="button-exclusive btn btn-default">
 								<i class="icon-chevron-left"></i>
 								{l s='Continue shopping' mod='eu_legal'}
 							</a>
 						{else}
-							<a href="{$link->getPageLink('order', true, NULL, "step=1&multi-shipping={$multi_shipping}")|escape:'html':'UTF-8'}" title="{l s='Previous' mod='eu_legal'}" class="button-exclusive btn btn-default">
+							<a href="{$link->getPageLink('order', true, NULL, "step=1{if $multi_shipping}&multi-shipping={$multi_shipping}{/if}")|escape:'html':'UTF-8'}" title="{l s='Previous' mod='eu_legal'}" class="button-exclusive btn btn-default">
 								<i class="icon-chevron-left"></i>
 								{l s='Continue shopping' mod='eu_legal'}
 							</a>
 						{/if}
 					{else}
-						<a href="{$link->getPageLink('order', true, NULL, "multi-shipping={$multi_shipping}")|escape:'html':'UTF-8'}" title="{l s='Previous' mod='eu_legal'}" class="button-exclusive btn btn-default">
+						<a href="{$link->getPageLink('order', true, NULL, "{if $multi_shipping}multi-shipping={$multi_shipping}{/if}")|escape:'html':'UTF-8'}" title="{l s='Previous' mod='eu_legal'}" class="button-exclusive btn btn-default">
 							<i class="icon-chevron-left"></i>
 							{l s='Continue shopping' mod='eu_legal'}
 						</a>

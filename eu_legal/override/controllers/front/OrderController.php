@@ -38,13 +38,13 @@ class OrderController extends OrderControllerCore
 			$this->context->cart->save();
 			$return = array(
 				'content' => Hook::exec(
-						'displayCarrierList',
-						array(
-							'address' => new Address((int)Tools::getValue('id_address'))
-						)
+					'displayCarrierList',
+					array(
+						'address' => new Address((int)Tools::getValue('id_address'))
 					)
+				)
 			);
-			die(Tools::jsonEncode($return));
+			$this->ajaxDie(Tools::jsonEncode($return));
 		}
 
 		if ($this->nbProducts)

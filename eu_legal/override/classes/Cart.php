@@ -188,6 +188,9 @@ class Cart extends CartCore
 			switch (Configuration::get('PS_ROUND_TYPE'))
 			{
 				case Order::ROUND_TOTAL:
+					$row['total'] = $row['price'] * (int)$row['cart_quantity'];
+					$row['total_wt'] = $tax_calculator->addTaxes($row['price']) * (int)$row['cart_quantity'];
+					break;
 				case Order::ROUND_LINE:
 					$row['total'] = Tools::ps_round($row['price'] * (int)$row['cart_quantity'], _PS_PRICE_COMPUTE_PRECISION_);
 					$row['total_wt'] = Tools::ps_round($tax_calculator->addTaxes($row['price']) * (int)$row['cart_quantity'], _PS_PRICE_COMPUTE_PRECISION_);
@@ -199,6 +202,7 @@ class Cart extends CartCore
 					$row['total_wt'] = Tools::ps_round($tax_calculator->addTaxes($row['price']), _PS_PRICE_COMPUTE_PRECISION_) * (int)$row['cart_quantity'];
 					break;
 			}
+
 			$row['price_wt'] = $tax_calculator->addTaxes($row['price']);
 			$row['description_short'] = Tools::nl2br($row['description_short']);
 
@@ -247,7 +251,6 @@ class Cart extends CartCore
 			$row = Product::getTaxesInformations($row, $cart_shop_context);
 
 			$this->_products[] = $row;
-
 		}
 
 		return $this->_products;
@@ -411,7 +414,6 @@ class Cart extends CartCore
 
 				if ($ecotax)
 					$ecotax_tax_calculator = TaxManagerFactory::getManager($address, (int)Configuration::get('PS_ECOTAX_TAX_RULES_GROUP_ID'))->getTaxCalculator();
-
 			}
 			else
 				$id_tax_rules_group = 0;
@@ -420,7 +422,6 @@ class Cart extends CartCore
 			{
 				if (!isset($products_total[$id_tax_rules_group]))
 					$products_total[$id_tax_rules_group] = 0;
-
 			}
 			else
 				if (!isset($products_total[$id_tax_rules_group.'_'.$id_address]))
@@ -436,18 +437,20 @@ class Cart extends CartCore
 					break;
 				case Order::ROUND_LINE:
 					$product_price = $price * $product['cart_quantity'];
-					$products_total[$id_tax_rules_group] += Tools::ps_round($product_price, _PS_PRICE_COMPUTE_PRECISION_);
 
 					if ($with_taxes)
-						$products_total[$id_tax_rules_group] += Tools::ps_round($tax_calculator->getTaxesTotalAmount($product_price), _PS_PRICE_COMPUTE_PRECISION_);
+						$products_total[$id_tax_rules_group] += Tools::ps_round($product_price + $tax_calculator->getTaxesTotalAmount($product_price), _PS_PRICE_COMPUTE_PRECISION_);
+					else
+						$products_total[$id_tax_rules_group] += Tools::ps_round($product_price, _PS_PRICE_COMPUTE_PRECISION_);
 
 					if ($ecotax)
 					{
 						$ecotax_price = $ecotax * (int)$product['cart_quantity'];
-						$ecotax_total += Tools::ps_round($ecotax_price, _PS_PRICE_COMPUTE_PRECISION_);
 
 						if ($with_taxes)
-							$ecotax_total += Tools::ps_round($ecotax_tax_calculator->getTaxesTotalAmount($ecotax_price), _PS_PRICE_COMPUTE_PRECISION_);
+							$ecotax_total += Tools::ps_round($ecotax_price + $ecotax_tax_calculator->getTaxesTotalAmount($ecotax_price), _PS_PRICE_COMPUTE_PRECISION_);
+						else
+							$ecotax_total += Tools::ps_round($ecotax_price, _PS_PRICE_COMPUTE_PRECISION_);
 					}
 					break;
 				case Order::ROUND_ITEM:
@@ -471,7 +474,7 @@ class Cart extends CartCore
 				$tmp = explode('_', $key);
 				$address = Address::initialize((int)$tmp[1], true);
 				$tax_calculator = TaxManagerFactory::getManager($address, $tmp[0])->getTaxCalculator();
-				$order_total += Tools::ps_round($price, _PS_PRICE_COMPUTE_PRECISION_) + Tools::ps_round($tax_calculator->getTaxesTotalAmount($price), _PS_PRICE_COMPUTE_PRECISION_);
+				$order_total += Tools::ps_round($price + $tax_calculator->getTaxesTotalAmount($price), _PS_PRICE_COMPUTE_PRECISION_);
 			}
 			else
 				$order_total += $price;
@@ -481,7 +484,6 @@ class Cart extends CartCore
 			$ecotax_total = Tools::ps_round($ecotax_total, _PS_PRICE_COMPUTE_PRECISION_) + Tools::ps_round($ecotax_tax_calculator->getTaxesTotalAmount($ecotax_total), _PS_PRICE_COMPUTE_PRECISION_);
 
 		$order_total += $ecotax_total;
-
 		$order_total_products = $order_total;
 
 		if ($type == Cart::ONLY_DISCOUNTS)
@@ -495,6 +497,7 @@ class Cart extends CartCore
 			return $wrapping_fees;
 
 		$order_total_discount = 0;
+		$order_shipping_discount = 0;
 		if (!in_array($type, array(Cart::ONLY_SHIPPING, Cart::ONLY_PRODUCTS)) && CartRule::isFeatureActive())
 		{
 			// First, retrieve the cart rules associated to this "getOrderTotal"
@@ -521,11 +524,15 @@ class Cart extends CartCore
 			$package = array('id_carrier' => $id_carrier, 'id_address' => $id_address_delivery, 'products' => $products);
 
 			// Then, calculate the contextual value for each one
+			$flag = false;
 			foreach ($cart_rules as $cart_rule)
 			{
 				// If the cart rule offers free shipping, add the shipping cost
-				if (($with_shipping || $type == Cart::ONLY_DISCOUNTS) && $cart_rule['obj']->free_shipping)
-					$order_total_discount += Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_SHIPPING, ($param_product ? $package : null), $use_cache), _PS_PRICE_COMPUTE_PRECISION_);
+				if (($with_shipping || $type == Cart::ONLY_DISCOUNTS) && $cart_rule['obj']->free_shipping && !$flag)
+				{
+					$order_shipping_discount = (float)Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_SHIPPING, ($param_product ? $package : null), $use_cache), _PS_PRICE_COMPUTE_PRECISION_);
+					$flag = true;
+				}
 
 				// If the cart rule is a free gift, then add the free gift value only if the gift is in this package
 				if ((int)$cart_rule['obj']->gift_product)
@@ -546,7 +553,7 @@ class Cart extends CartCore
 				if ($cart_rule['obj']->reduction_percent != 0 || $cart_rule['obj']->reduction_amount != 0)
 					$order_total_discount += Tools::ps_round($cart_rule['obj']->getContextualValue($with_taxes, $virtual_context, CartRule::FILTER_ACTION_REDUCTION, $package, $use_cache), _PS_PRICE_COMPUTE_PRECISION_);
 			}
-			$order_total_discount = min(Tools::ps_round($order_total_discount, 2), $wrapping_fees + $order_total_products + $shipping_fees);
+			$order_total_discount = min(Tools::ps_round($order_total_discount, 2), (float)$order_total_products) + (float)$order_shipping_discount;
 			$order_total -= $order_total_discount;
 		}
 
@@ -560,7 +567,6 @@ class Cart extends CartCore
 			return $order_total_discount;
 
 		return Tools::ps_round((float)$order_total, _PS_PRICE_COMPUTE_PRECISION_);
-
 	}
 
 	public function getGiftWrappingPrice($with_taxes = true, $id_address = null)
@@ -717,8 +723,12 @@ class Cart extends CartCore
 		if (!$default_country)
 			$default_country = Context::getContext()->country;
 
-		$complete_product_list = $this->getProducts();
+		if (!is_null($product_list))
+			foreach ($product_list as $key => $value)
+				if ($value['is_virtual'] == 1)
+					unset($product_list[$key]);
 
+		$complete_product_list = $this->getProducts();
 		if (is_null($product_list))
 			$products = $complete_product_list;
 		else
@@ -733,17 +743,13 @@ class Cart extends CartCore
 		}
 		else
 			$address_id = null;
-
 		if (!Address::addressExists($address_id))
 			$address_id = null;
 
 		$cache_id = 'getPackageShippingCost_'.(int)$this->id.'_'.(int)$address_id.'_'.(int)$id_carrier.'_'.(int)$use_tax.'_'.(int)$default_country->id;
-
 		if ($products)
-		{
 			foreach ($products as $product)
 				$cache_id .= '_'.(int)$product['id_product'].'_'.(int)$product['id_product_attribute'];
-		}
 
 		if (Cache::isStored($cache_id))
 			return Cache::retrieve($cache_id);
@@ -753,7 +759,6 @@ class Cart extends CartCore
 
 		// Start with shipping cost at 0
 		$shipping_cost = 0;
-
 		// If no product added, return 0
 		if (!count($products))
 		{
@@ -768,13 +773,13 @@ class Cart extends CartCore
 				&& isset($this->id_address_delivery) // Be carefull, id_address_delivery is not usefull one 1.5
 				&& $this->id_address_delivery
 				&& Customer::customerHasAddress($this->id_customer, $this->id_address_delivery
-				))
-
+			))
 				$id_zone = Address::getZoneById((int)$this->id_address_delivery);
 			else
 			{
 				if (!Validate::isLoadedObject($default_country))
 					$default_country = new Country(Configuration::get('PS_COUNTRY_DEFAULT'), Configuration::get('PS_LANG_DEFAULT'));
+
 				$id_zone = (int)$default_country->id_zone;
 			}
 		}
@@ -809,7 +814,7 @@ class Cart extends CartCore
 
 				// Get only carriers that are compliant with shipping method
 				if (($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT && $carrier->getMaxDeliveryPriceByWeight((int)$id_zone) === false)
-					|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && $carrier->getMaxDeliveryPriceByPrice((int)$id_zone) === false))
+				|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && $carrier->getMaxDeliveryPriceByPrice((int)$id_zone) === false))
 				{
 					unset($result[$k]);
 					continue;
@@ -825,7 +830,7 @@ class Cart extends CartCore
 
 					// Get only carriers that have a range compatible with cart
 					if (($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT && !$check_delivery_price_by_weight)
-						|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && !$check_delivery_price_by_price))
+					|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && !$check_delivery_price_by_price))
 					{
 						unset($result[$k]);
 						continue;
@@ -856,6 +861,7 @@ class Cart extends CartCore
 
 		$carrier = self::$_carriers[$id_carrier];
 
+		// No valid Carrier or $id_carrier <= 0 ?
 		if (!Validate::isLoadedObject($carrier))
 		{
 			Cache::store($cache_id, 0);
@@ -891,12 +897,9 @@ class Cart extends CartCore
 
 		// Free fees
 		$free_fees_price = 0;
-
 		if (isset($configuration['PS_SHIPPING_FREE_PRICE']))
 			$free_fees_price = Tools::convertPrice((float)$configuration['PS_SHIPPING_FREE_PRICE'], Currency::getCurrencyInstance((int)$this->id_currency));
-
 		$orderTotalwithDiscounts = $this->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING, null, null, false);
-
 		if ($orderTotalwithDiscounts >= (float)($free_fees_price) && (float)($free_fees_price) > 0)
 		{
 			Cache::store($cache_id, $shipping_cost);
@@ -914,7 +917,7 @@ class Cart extends CartCore
 		// Get shipping cost using correct method
 		if ($carrier->range_behavior)
 		{
-			if (!isset($id_zone))
+			if(!isset($id_zone))
 			{
 				// Get id zone
 				if (isset($this->id_address_delivery)
@@ -926,8 +929,8 @@ class Cart extends CartCore
 			}
 
 			if (($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT && !Carrier::checkDeliveryPriceByWeight($carrier->id, $this->getTotalWeight(), (int)$id_zone))
-				|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && !Carrier::checkDeliveryPriceByPrice($carrier->id, $total_package_without_shipping_tax_inc, $id_zone, (int)$this->id_currency)
-				))
+			|| ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_PRICE && !Carrier::checkDeliveryPriceByPrice($carrier->id, $total_package_without_shipping_tax_inc, $id_zone, (int)$this->id_currency)
+			))
 				$shipping_cost += 0;
 			else
 			{
@@ -945,7 +948,6 @@ class Cart extends CartCore
 				$shipping_cost += $carrier->getDeliveryPriceByPrice($order_total, $id_zone, (int)$this->id_currency);
 
 		}
-
 		// Adding handling charges
 		if (isset($configuration['PS_SHIPPING_HANDLING']) && $carrier->shipping_handling)
 			$shipping_cost += (float)$configuration['PS_SHIPPING_HANDLING'];
@@ -967,7 +969,6 @@ class Cart extends CartCore
 			{
 				if (array_key_exists('id_carrier', $module))
 					$module->id_carrier = $carrier->id;
-
 				if ($carrier->need_range)
 					if (method_exists($module, 'getPackageShippingCost'))
 						$shipping_cost = $module->getPackageShippingCost($this, $shipping_cost, $products);

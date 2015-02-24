@@ -2,15 +2,15 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.1.2
- * @date      : 2015 01 30
+ * @version   : 1.2.0
+ * @date      : 2015 02 25
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
  * @homepage  : www.onlineshop-module.de | www.silbersaiten.de
  * @license   : http://opensource.org/licenses/osl-3.0.php
  * @changelog : see changelog.txt
- * @compatibility : PS == 1.6.0.11
+ * @compatibility : PS == 1.6.0.12
  */
 
 /* no direct access to this module */
@@ -33,9 +33,6 @@ class EU_Legal extends Module
 	public $deliveryNowDefault = '';
 	public $deliveryLaterDefault = '';
 	public $hooks = array();
-	public $modules_not_compatible = array();
-	public $modules_must_install = array();
-	public $modules = array();
 	public $cms_pages = array();
 	public $config_prefix = '';
 
@@ -59,7 +56,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.1.2';
+		$this->version = '1.2.0';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -69,8 +66,8 @@ class EU_Legal extends Module
 
 		// module compliancy: only for exactly one PS version
 		$this->ps_versions_compliancy = array(
-			'min' => '1.6.0.11',
-			'max' => '1.6.0.11'
+			'min' => '1.6.0.12',
+			'max' => '1.6.0.12'
 		);
 
 		// bootstrap baqckoffice functionality
@@ -144,34 +141,6 @@ class EU_Legal extends Module
 				'name' => 'hook top',
 				'templates' => array()
 			),
-		);
-
-		// modules not compatible with EU Legal
-		$this->modules_not_compatible = array(
-			/*'bankwire',
-			'cheque',*/
-			'ganalytics',
-			'avalaratax',
-			'attributewizardpro',
-			'crossselling',
-			'carriercompare',
-		);
-
-		// modules must install 
-		$this->modules_must_install = array(/*'blockcustomerprivacy',*/
-		);
-
-		// supported modules, delivered with EU Legal
-		$this->modules = array(
-			'gc_ganalytics' => 'Google Analytics',
-			'trustedshops' => 'Trusted Shops',
-			'paypal'=> 'EU Paypal',
-			'moneybookers' => 'EU Moneybookers',
-			'sofortbanking' => 'EU Sofortbanking',
-			'cashondelivery' => 'EU Cash on delivery',
-
-			/*'gc_newsletter' => 'Newsletter',
-			'gc_blockcart'  => 'Warenkorb Block',*/
 		);
 
 		// available cms pages
@@ -403,11 +372,6 @@ class EU_Legal extends Module
 		// regenerate class index
 		Autoload::getInstance()->generateIndex();
 
-		if ($return)
-		{
-			// Forbid autoupdate to prevent modified payment modules from being updated.
-			Configuration::updateValue('PRESTASTORE_LIVE', 0);
-		}
 
 		return (bool)$return;
 
@@ -650,7 +614,6 @@ class EU_Legal extends Module
 		$html = '';
 
 		$html .= $this->displayFormSettings();
-		$html .= $this->displayFormModules();
 		$html .= $this->displayFormMails();
 		$html .= $this->displayFormPdf();
 		$html .= $this->displayFormTheme();
@@ -684,29 +647,6 @@ class EU_Legal extends Module
 		return $helper->generateOptions($this->option_fields_settings);
 	}
 
-	/* additional modules form */
-	protected function displayFormModules()
-	{
-		$helper = new HelperForm();
-
-		// Helper Form
-		$helper->languages = $this->languages;
-		$helper->default_form_language = $this->default_language_id;
-		$helper->submit_action = 'submitAddModules';
-
-		// Helper
-		$helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
-		$helper->table = 'configuration';
-		$helper->token = Tools::getAdminTokenLite('AdminModules');
-		$helper->module = $this;
-		$helper->title = null;
-
-		foreach ($this->modules as $name => $title)
-			$helper->fields_value[] = array('module_'.$name => (bool)Module::isInstalled($name));
-
-		$this->getFormFieldsModules();
-		return $helper->generateForm($this->form_fields_modules);
-	}
 
 	/* mail form */
 	protected function displayFormMails()
@@ -887,108 +827,6 @@ class EU_Legal extends Module
 				),
 			),
 		);
-
-	}
-
-	protected function getFormFieldsModules()
-	{
-		$modules_must_install = '';
-		$modules_not_compatible = '';
-
-		foreach ($this->modules_must_install as $module)
-		{
-
-			if (Module::isInstalled($module))
-				if (Module::isEnabled($module))
-					continue;
-				else
-					$modules_must_install .= $this->l('Please enable').': <b>'.$module.'</b><br>';
-			else
-				$modules_must_install .= $this->l('Please install and enable').': <b>'.$module.'</b><br>';
-
-		}
-
-		foreach ($this->modules_not_compatible as $module)
-		{
-
-			if (!Module::isEnabled($module))
-				continue;
-			else
-				$modules_not_compatible .= $this->l('Please disable').': <b>'.$module.'</b><br>';
-
-		}
-
-
-		$modules = array();
-		foreach ($this->modules as $name => $title)
-		{
-
-			Cache::clean('Module::isInstalled'.$name);
-			Cache::clean('Module::getModuleIdByName_'.$name);
-			Cache::clean('Module::isEnabled'.$name);
-
-			$module = Module::getInstanceByName($name);
-			$eu_module = false;
-
-			if ($module && isset($module->is_eu_compatible) && $module->is_eu_compatible)
-				$eu_module = true;
-
-			$modules[] = array(
-				'name' => $name,
-				'title' => $title,
-				'installed' => Module::isInstalled($name),
-				'eu_module' => $eu_module,
-				'val' => $name,
-			);
-
-		}
-
-		$this->form_fields_modules = array(
-			array(
-				'form' => array(
-					'legend' => array(
-						'title' => $this->l('Additional Modules'),
-						'icon' => 'icon-puzzle-piece'
-					),
-					'input' => array(
-						array(
-							'type' => 'checkbox_module',
-							'label' => $this->l('Must have modules'),
-							'name' => 'modules',
-							'desc' => $this->l('These are additional modules served with EU Legal. Please install them.'),
-							'values' => array(
-								'query' => $modules,
-								'id' => 'name',
-								'name' => 'title',
-								'disabled' => 'installed',
-							),
-						),
-					),
-					'submit' => array(
-						'title' => $this->l('Add Modules'),
-						'icon' => 'process-icon-plus',
-					)
-				),
-			),
-		);
-
-		if ($modules_not_compatible)
-			$this->form_fields_modules[0]['form']['input'][] = array(
-				'type' => 'html',
-				'id' => 'modules_not_compatible',
-				'label' => $this->l('Modules not compatible'),
-				'name' => '<div class="alert alert-warning">'.$modules_not_compatible.'</div>',
-				'desc' => $this->l('You have to uninstall some modules not compatible with EU Legal.'),
-			);
-
-		if ($modules_must_install)
-			$this->form_fields_modules[0]['form']['input'][] = array(
-				'type' => 'html',
-				'id' => 'modules_must_install',
-				'label' => $this->l('Must install modules'),
-				'name' => '<div class="alert alert-warning">'.$modules_must_install.'</div>',
-				'desc' => $this->l('You have to install some required prestashop modules.'),
-			);
 
 	}
 
@@ -1343,51 +1181,7 @@ class EU_Legal extends Module
 				return $this->displayConfirmation($this->l('Theme settings saved'));
 
 		}
-		elseif (Tools::isSubmit('submitAddModules'))
-		{
-
-			$modules = Tools::getValue('modules');
-			$dir = dirname(__FILE__).'/modules/';
-
-			foreach ($modules as $module)
-			{
-
-				if (!Tools::ZipExtract($dir.$module.'.zip', _PS_MODULE_DIR_))
-				{
-					$this->_errors[] = $this->l('Could not extract file').': '.$module.'.zip';
-					continue;
-				}
-
-				if (!$instance = self::getInstanceByName($module))
-				{
-					$this->_errors[] = $this->l('Could not instance module').': '.$module;
-					continue;
-				}
-
-				if (self::isInstalled($instance->name))
-				{
-					if ($instance->uninstall())
-						$instance->install();
-				}
-				elseif (!$instance->install())
-				{
-
-					if (is_array($instance->_errors))
-						$this->_errors = array_merge($this->_errors, $instance->_errors);
-
-				}
-
-				Cache::clean('Module::isInstalled'.$module);
-				Cache::clean('Module::getModuleIdByName_'.$module);
-				Cache::clean('Module::isEnabled'.$module);
-
-
-			}
-
-			if (count($this->_errors) <= 0)
-				return $this->displayConfirmation($this->l('Modules installed'));
-
-		}
+		
 
 		if (!empty($this->_errors))
 			return $this->displayError(implode('<br>', $this->_errors));
