@@ -42,18 +42,18 @@ class AdminProductsController extends AdminProductsControllerCore
 		$product_props = array();
 		// global informations
 		array_push($product_props, 'reference', 'ean13', 'upc',
-			'available_for_order', 'show_price', 'online_only',
-			'id_manufacturer'
+		'available_for_order', 'show_price', 'online_only',
+		'id_manufacturer'
 		);
 
 		// specific / detailled information
 		array_push($product_props,
-			// physical product
-			'width', 'height', 'weight', 'active',
-			// virtual product
-			'is_virtual', 'cache_default_attribute',
-			// customization
-			'uploadable_files', 'text_fields'
+		// physical product
+		'width', 'height', 'weight', 'active',
+		// virtual product
+		'is_virtual', 'cache_default_attribute',
+		// customization
+		'uploadable_files', 'text_fields'
 		);
 		// prices
 		array_push($product_props,

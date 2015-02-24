@@ -417,15 +417,13 @@ class PaymentModule extends PaymentModuleCore
 						if (!$values['tax_excl'])
 							continue;
 
-						/* IF
-						** - This is not multi-shipping
-						** - The value of the voucher is greater than the total of the order
-						** - Partial use is allowed
-						** - This is an "amount" reduction, not a reduction in % or a gift
-						** THEN
-						** The voucher is cloned with a new value corresponding to the remainder
-						*/
-
+						// IF
+						//     This is not multi-shipping
+						//     The value of the voucher is greater than the total of the order
+						//     Partial use is allowed
+						//     This is an "amount" reduction, not a reduction in % or a gift
+						// THEN
+						//     The voucher is cloned with a new value corresponding to the remainder
 						if (count($order_list) == 1 && $values['tax_incl'] > ($order->total_products_wt - $total_reduction_value_ti) && $cart_rule['obj']->partial_use == 1 && $cart_rule['obj']->reduction_amount > 0)
 						{
 							// Create a new voucher from the original
@@ -440,7 +438,7 @@ class PaymentModule extends PaymentModuleCore
 							// Set the new voucher value
 							if ($voucher->reduction_tax)
 							{
-								$voucher->reduction_amount = $order->total_products_wt - $total_reduction_value_ti;
+								$voucher->reduction_amount = ($total_reduction_value_ti + $values['tax_incl']) - $order->total_products_wt;
 
 								// Add total shipping amout only if reduction amount > total shipping
 								if ($voucher->free_shipping == 1 && $voucher->reduction_amount >= $order->total_shipping_tax_incl)
@@ -448,7 +446,7 @@ class PaymentModule extends PaymentModuleCore
 							}
 							else
 							{
-								$voucher->reduction_amount = $order->total_products - $total_reduction_value_tex;
+								$voucher->reduction_amount =  ($total_reduction_value_tex + $values['tax_excl']) - $order->total_products;
 
 								// Add total shipping amout only if reduction amount > total shipping
 								if ($voucher->free_shipping == 1 && $voucher->reduction_amount >= $order->total_shipping_tax_excl)
@@ -596,56 +594,56 @@ class PaymentModule extends PaymentModuleCore
 						$invoice_state = $invoice->id_state ? new State($invoice->id_state) : false;
 
 						$data = array(
-							'{firstname}' => $this->context->customer->firstname,
-							'{lastname}' => $this->context->customer->lastname,
-							'{email}' => $this->context->customer->email,
-							'{delivery_block_txt}' => $this->_getFormatedAddress($delivery, "\n"),
-							'{invoice_block_txt}' => $this->_getFormatedAddress($invoice, "\n"),
-							'{delivery_block_html}' => $this->_getFormatedAddress($delivery, '<br />', array(
-									'firstname'	=> '<span style="font-weight:bold;">%s</span>',
-									'lastname'	=> '<span style="font-weight:bold;">%s</span>'
-								)),
-							'{invoice_block_html}' => $this->_getFormatedAddress($invoice, '<br />', array(
-									'firstname'	=> '<span style="font-weight:bold;">%s</span>',
-									'lastname'	=> '<span style="font-weight:bold;">%s</span>'
-								)),
-							'{delivery_company}' => $delivery->company,
-							'{delivery_firstname}' => $delivery->firstname,
-							'{delivery_lastname}' => $delivery->lastname,
-							'{delivery_address1}' => $delivery->address1,
-							'{delivery_address2}' => $delivery->address2,
-							'{delivery_city}' => $delivery->city,
-							'{delivery_postal_code}' => $delivery->postcode,
-							'{delivery_country}' => $delivery->country,
-							'{delivery_state}' => $delivery->id_state ? $delivery_state->name : '',
-							'{delivery_phone}' => ($delivery->phone) ? $delivery->phone : $delivery->phone_mobile,
-							'{delivery_other}' => $delivery->other,
-							'{invoice_company}' => $invoice->company,
-							'{invoice_vat_number}' => $invoice->vat_number,
-							'{invoice_firstname}' => $invoice->firstname,
-							'{invoice_lastname}' => $invoice->lastname,
-							'{invoice_address2}' => $invoice->address2,
-							'{invoice_address1}' => $invoice->address1,
-							'{invoice_city}' => $invoice->city,
-							'{invoice_postal_code}' => $invoice->postcode,
-							'{invoice_country}' => $invoice->country,
-							'{invoice_state}' => $invoice->id_state ? $invoice_state->name : '',
-							'{invoice_phone}' => ($invoice->phone) ? $invoice->phone : $invoice->phone_mobile,
-							'{invoice_other}' => $invoice->other,
-							'{order_name}' => $order->getUniqReference(),
-							'{date}' => Tools::displayDate(date('Y-m-d H:i:s'), null, 1),
-							'{carrier}' => ($virtual_product || !isset($carrier->name)) ? Tools::displayError('No carrier') : $carrier->name,
-							'{payment}' => Tools::substr($order->payment, 0, 32),
-							'{products}' => $product_list_html,
-							'{products_txt}' => $product_list_txt,
-							'{discounts}' => $cart_rules_list_html,
-							'{discounts_txt}' => $cart_rules_list_txt,
-							'{total_paid}' => Tools::displayPrice($order->total_paid, $this->context->currency, false),
-							'{total_products}' => Tools::displayPrice($order->total_paid - $order->total_shipping - $order->total_wrapping + $order->total_discounts, $this->context->currency, false),
-							'{total_discounts}' => Tools::displayPrice($order->total_discounts, $this->context->currency, false),
-							'{total_shipping}' => Tools::displayPrice($order->total_shipping, $this->context->currency, false),
-							'{total_wrapping}' => Tools::displayPrice($order->total_wrapping, $this->context->currency, false),
-							'{total_tax_paid}' => Tools::displayPrice(($order->total_products_wt - $order->total_products) + ($order->total_shipping_tax_incl - $order->total_shipping_tax_excl), $this->context->currency, false));
+						'{firstname}' => $this->context->customer->firstname,
+						'{lastname}' => $this->context->customer->lastname,
+						'{email}' => $this->context->customer->email,
+						'{delivery_block_txt}' => $this->_getFormatedAddress($delivery, "\n"),
+						'{invoice_block_txt}' => $this->_getFormatedAddress($invoice, "\n"),
+						'{delivery_block_html}' => $this->_getFormatedAddress($delivery, '<br />', array(
+							'firstname'	=> '<span style="font-weight:bold;">%s</span>',
+							'lastname'	=> '<span style="font-weight:bold;">%s</span>'
+						)),
+						'{invoice_block_html}' => $this->_getFormatedAddress($invoice, '<br />', array(
+								'firstname'	=> '<span style="font-weight:bold;">%s</span>',
+								'lastname'	=> '<span style="font-weight:bold;">%s</span>'
+						)),
+						'{delivery_company}' => $delivery->company,
+						'{delivery_firstname}' => $delivery->firstname,
+						'{delivery_lastname}' => $delivery->lastname,
+						'{delivery_address1}' => $delivery->address1,
+						'{delivery_address2}' => $delivery->address2,
+						'{delivery_city}' => $delivery->city,
+						'{delivery_postal_code}' => $delivery->postcode,
+						'{delivery_country}' => $delivery->country,
+						'{delivery_state}' => $delivery->id_state ? $delivery_state->name : '',
+						'{delivery_phone}' => ($delivery->phone) ? $delivery->phone : $delivery->phone_mobile,
+						'{delivery_other}' => $delivery->other,
+						'{invoice_company}' => $invoice->company,
+						'{invoice_vat_number}' => $invoice->vat_number,
+						'{invoice_firstname}' => $invoice->firstname,
+						'{invoice_lastname}' => $invoice->lastname,
+						'{invoice_address2}' => $invoice->address2,
+						'{invoice_address1}' => $invoice->address1,
+						'{invoice_city}' => $invoice->city,
+						'{invoice_postal_code}' => $invoice->postcode,
+						'{invoice_country}' => $invoice->country,
+						'{invoice_state}' => $invoice->id_state ? $invoice_state->name : '',
+						'{invoice_phone}' => ($invoice->phone) ? $invoice->phone : $invoice->phone_mobile,
+						'{invoice_other}' => $invoice->other,
+						'{order_name}' => $order->getUniqReference(),
+						'{date}' => Tools::displayDate(date('Y-m-d H:i:s'), null, 1),
+						'{carrier}' => ($virtual_product || !isset($carrier->name)) ? Tools::displayError('No carrier') : $carrier->name,
+						'{payment}' => Tools::substr($order->payment, 0, 32),
+						'{products}' => $product_list_html,
+						'{products_txt}' => $product_list_txt,
+						'{discounts}' => $cart_rules_list_html,
+						'{discounts_txt}' => $cart_rules_list_txt,
+						'{total_paid}' => Tools::displayPrice($order->total_paid, $this->context->currency, false),
+						'{total_products}' => Tools::displayPrice($order->total_paid - $order->total_shipping - $order->total_wrapping + $order->total_discounts, $this->context->currency, false),
+						'{total_discounts}' => Tools::displayPrice($order->total_discounts, $this->context->currency, false),
+						'{total_shipping}' => Tools::displayPrice($order->total_shipping, $this->context->currency, false),
+						'{total_wrapping}' => Tools::displayPrice($order->total_wrapping, $this->context->currency, false),
+						'{total_tax_paid}' => Tools::displayPrice(($order->total_products_wt - $order->total_products) + ($order->total_shipping_tax_incl - $order->total_shipping_tax_excl), $this->context->currency, false));
 
 						if (is_array($extra_vars))
 							$data = array_merge($data, $extra_vars);
@@ -706,7 +704,7 @@ class PaymentModule extends PaymentModuleCore
 			foreach ($order->getOrderDetailList() as $detail)
 			{
 				$order_detail = new OrderDetail($detail['id_order_detail']);
-				$order_detail->updateTaxAmount($order);
+					$order_detail->updateTaxAmount($order);
 			}
 
 			// Use the last order as currentOrder

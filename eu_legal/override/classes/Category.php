@@ -66,9 +66,9 @@ class Category extends CategoryCore
 					'.Shop::addSqlAssociation('product', 'p').'
 					LEFT JOIN `'._DB_PREFIX_.'category_product` cp ON p.`id_product` = cp.`id_product`
 					WHERE cp.`id_category` = '.(int)$this->id.
-				($front ? ' AND product_shop.`visibility` IN ("both", "catalog")' : '').
-				($active ? ' AND product_shop.`active` = 1' : '').
-				($id_supplier ? 'AND p.id_supplier = '.(int)$id_supplier : '');
+					($front ? ' AND product_shop.`visibility` IN ("both", "catalog")' : '').
+					($active ? ' AND product_shop.`active` = 1' : '').
+					($id_supplier ? 'AND p.id_supplier = '.(int)$id_supplier : '');
 			return (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
 		}
 
@@ -83,7 +83,7 @@ class Category extends CategoryCore
 				LEFT JOIN `'._DB_PREFIX_.'product` p
 					ON p.`id_product` = cp.`id_product`
 				'.Shop::addSqlAssociation('product', 'p').
-			(Combination::isFeatureActive() ? 'LEFT JOIN `'._DB_PREFIX_.'product_attribute` pa
+				(Combination::isFeatureActive() ? 'LEFT JOIN `'._DB_PREFIX_.'product_attribute` pa
 				ON (p.`id_product` = pa.`id_product`)
 				'.Shop::addSqlAssociation('product_attribute', 'pa', false, 'product_attribute_shop.`default_on` = 1').'
 				'.Product::sqlStock('p', 'product_attribute_shop', false, $context->shop) :  Product::sqlStock('p', 'product', false, Context::getContext()->shop)).'
@@ -95,7 +95,7 @@ class Category extends CategoryCore
 					AND pl.`id_lang` = '.(int)$id_lang.Shop::addSqlRestrictionOnLang('pl').')
 				LEFT JOIN `'._DB_PREFIX_.'image` i
 					ON (i.`id_product` = p.`id_product`)'.
-			Shop::addSqlAssociation('image', 'i', false, 'image_shop.cover=1').'
+				Shop::addSqlAssociation('image', 'i', false, 'image_shop.cover=1').'
 				LEFT JOIN `'._DB_PREFIX_.'image_lang` il
 					ON (image_shop.`id_image` = il.`id_image`
 					AND il.`id_lang` = '.(int)$id_lang.')
@@ -103,10 +103,10 @@ class Category extends CategoryCore
 					ON m.`id_manufacturer` = p.`id_manufacturer`
 				WHERE product_shop.`id_shop` = '.(int)$context->shop->id.'
 					AND cp.`id_category` = '.(int)$this->id
-			.($active ? ' AND product_shop.`active` = 1' : '')
-			.($front ? ' AND product_shop.`visibility` IN ("both", "catalog")' : '')
-			.($id_supplier ? ' AND p.id_supplier = '.(int)$id_supplier : '')
-			.' GROUP BY product_shop.id_product';
+					.($active ? ' AND product_shop.`active` = 1' : '')
+					.($front ? ' AND product_shop.`visibility` IN ("both", "catalog")' : '')
+					.($id_supplier ? ' AND p.id_supplier = '.(int)$id_supplier : '')
+					.' GROUP BY product_shop.id_product';
 
 		if ($random === true)
 			$sql .= ' ORDER BY RAND() LIMIT '.(int)$random_number_products;

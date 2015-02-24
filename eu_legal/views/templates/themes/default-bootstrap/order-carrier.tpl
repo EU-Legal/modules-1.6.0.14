@@ -37,14 +37,6 @@
 		{if isset($isVirtualCart) && $isVirtualCart}
 			<p class="alert alert-warning">{l s='No carrier is needed for this order.' mod='eu_legal'}</p>
 		{else}
-			{if $recyclablePackAllowed}
-				<div class="checkbox">
-					<label for="recyclable">
-						<input type="checkbox" name="recyclable" id="recyclable" value="1" {if $recyclable == 1}checked="checked"{/if} />
-						{l s='I would like to receive my order in recycled packaging.' mod='eu_legal'}.
-					</label>
-				</div>
-			{/if}
 			<div class="delivery_options_address">
 				{if isset($delivery_option_list)}
 					{foreach $delivery_option_list as $id_address => $option_list}
@@ -80,10 +72,11 @@
 															<strong>{$carrier.instance->name|escape:'htmlall':'UTF-8'}</strong>
 														{/foreach}
 														{if isset($carrier.instance->delay[$cookie->id_lang])}
-															{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
+															<br />{l s='Delivery time:'}&nbsp;{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
 														{/if}
 													{/if}
 													{if count($option_list) > 1}
+													<br />
 														{if $option.is_best_grade}
 															{if $option.is_best_price}
 																{l s='The best price and speed' mod='eu_legal'}
@@ -189,23 +182,21 @@
 														</div>
 													</td>
 												</tr>
-												<tr>
-													<td class="delivery_option_logo{if $carrier.product_list[0].carrier_list[0] eq 0} not-displayable{/if}">
 														{foreach $option.carrier_list as $carrier}
 															{if $carrier@iteration != 1}
+													<tr>
+														<td class="delivery_option_logo{if $carrier.product_list[0].carrier_list[0] eq 0} hide{/if}">
 																{if $carrier.logo}
 																	<img src="{$carrier.logo|escape:'htmlall':'UTF-8'}" alt="{$carrier.instance->name|escape:'htmlall':'UTF-8'}"/>
 																{else if !$option.unique_carrier}
 																	{$carrier.instance->name|escape:'htmlall':'UTF-8'}
-																{/if}
 															{/if}
-														{/foreach}
 													</td>
 													<td class="{if $option.unique_carrier} first_item{/if}{if $carrier.product_list[0].carrier_list[0] eq 0} not-displayable{/if}">
 														<input type="hidden" value="{$first.instance->id|intval}" name="id_carrier" />
 														{if isset($carrier.instance->delay[$cookie->id_lang])}
 															<i class="icon-info-sign"></i>
-															{$first.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
+																	{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
 															{if count($carrier.product_list) <= 1}
 																({l s='Product concerned:' mod='eu_legal'}
 															{else}
@@ -242,6 +233,8 @@
 														{/if}
 													</td>
 												</tr>
+													{/if}
+												{/foreach}
 											</table>
 										{/if}
 									</div>
@@ -269,6 +262,7 @@
 						{/foreach}
 					{/if}
 				</div> <!-- end delivery_options_address -->
+				<div id="extra_carrier" style="display: none;"></div>
 				{if $opc}
 					<p class="carrier_title">{l s='Leave a message' mod='eu_legal'}</p>
 					<div>
@@ -277,10 +271,20 @@
 							{if isset($oldMessage)}{$oldMessage|escape:'html':'UTF-8'}{/if}
 						{/strip}</textarea>
 					</div>
-					<hr style="" />
+				{/if}
+				{if $recyclablePackAllowed}
+					<div class="checkbox recyclable">
+						<label for="recyclable">
+							<input type="checkbox" name="recyclable" id="recyclable" value="1"{if $recyclable == 1} checked="checked"{/if} />
+							{l s='I would like to receive my order in recycled packaging.'}
+						</label>
+					</div>
 				{/if}
 				<div id="extra_carrier" style="display: none;"></div>
 					{if $giftAllowed}
+					{if $opc}
+						<hr style="" />
+					{/if}
 						<p class="carrier_title">{l s='Gift' mod='eu_legal'}</p>
 						<p class="checkbox gift">
 							<input type="checkbox" name="gift" id="gift" value="1" {if $cart->gift == 1}checked="checked"{/if} />
@@ -315,6 +319,9 @@
 						{/if}
 					{/if}
 				{/if}
+			{if $conditions AND $cms_id}
+				{if $opc}
+					<hr style="" />
 			{/if}
 			{if (!isset($PS_EU_PAYMENT_API) || !$PS_EU_PAYMENT_API) && $conditions AND $cms_id}
 				<p class="carrier_title">{l s='Terms of service' mod='eu_legal'}</p>

@@ -36,7 +36,7 @@
 {elseif $PS_CATALOG_MODE}
 	<p class="alert alert-warning">{l s='This store has not accepted your new order.' mod='eu_legal'}</p>
 {else}
-	<p style="display:none" id="emptyCartWarning" class="alert alert-warning">{l s='Your shopping cart is empty.' mod='eu_legal'}</p>
+	<p id="emptyCartWarning" class="alert alert-warning unvisible">{l s='Your shopping cart is empty.' mod='eu_legal'}</p>
 	{if isset($lastProductAdded) AND $lastProductAdded}
 		<div class="cart_last_product">
 			<div class="cart_last_product_header">
@@ -208,25 +208,25 @@
 				</tr>
 				{if ! $PS_EU_PAYMENT_API}
 					{if $total_shipping_tax_exc <= 0 && !isset($virtualCart)}
-						<tr class="cart_total_delivery" style="{if !isset($carrier->id) || is_null($carrier->id)}display:none;{/if}">
-							<td colspan="{$col_span_subtotal}" class="text-right">{l s='Shipping' mod='eu_legal'}</td>
+					<tr class="cart_total_delivery{if !$opc && (!isset($cart->id_address_delivery) || !$cart->id_address_delivery)} unvisible{/if}">
+							<td colspan="{$col_span_subtotal}" class="text-right">{l s='Total shipping' mod='eu_legal'}</td>
 							<td colspan="2" class="price" id="total_shipping">{l s='Free Shipping!' mod='eu_legal'}</td>
 						</tr>
 					{else}
 						{if $use_taxes && $total_shipping_tax_exc != $total_shipping}
 							{if $priceDisplay}
-								<tr class="cart_total_delivery" {if $total_shipping_tax_exc <= 0} style="display:none;"{/if}>
+							<tr class="cart_total_delivery{if $total_shipping_tax_exc <= 0} unvisible{/if}">
 									<td colspan="{$col_span_subtotal}" class="text-right">{if $display_tax_label}{l s='Total shipping (tax excl.)' mod='eu_legal'}{else}{l s='Total shipping' mod='eu_legal'}{/if}</td>
 									<td colspan="2" class="price" id="total_shipping">{displayPrice price=$total_shipping_tax_exc}</td>
 								</tr>
 							{else}
-								<tr class="cart_total_delivery"{if $total_shipping <= 0} style="display:none;"{/if}>
+							<tr class="cart_total_delivery{if $total_shipping <= 0} unvisible{/if}">
 									<td colspan="{$col_span_subtotal}" class="text-right">{if $display_tax_label}{l s='Total shipping (tax incl.)' mod='eu_legal'}{else}{l s='Total shipping' mod='eu_legal'}{/if}</td>
 									<td colspan="2" class="price" id="total_shipping" >{displayPrice price=$total_shipping}</td>
 								</tr>
 							{/if}
 						{else}
-							<tr class="cart_total_delivery"{if $total_shipping_tax_exc <= 0} style="display:none;"{/if}>
+						<tr class="cart_total_delivery{if $total_shipping_tax_exc <= 0} unvisible{/if}">
 								<td colspan="{$col_span_subtotal}" class="text-right">{l s='Total shipping' mod='eu_legal'}</td>
 								<td colspan="2" class="price" id="total_shipping" >{displayPrice price=$total_shipping_tax_exc}</td>
 							</tr>
@@ -238,7 +238,7 @@
 						<td colspan="2" class="price" id="total_shipping">{hook h="displayShippingPrice"}</td>
 					</tr>
 				{/if}
-				<tr class="cart_total_voucher" {if $total_discounts == 0}style="display:none"{/if}>
+				<tr class="cart_total_voucher{if $total_discounts == 0} unvisible{/if}">
 					<td colspan="{$col_span_subtotal}" class="text-right">
 						{if $display_tax_label}
 							{if $use_taxes && $priceDisplay == 0}
@@ -405,6 +405,9 @@
 			{if sizeof($discounts)}
 				<tbody>
 					{foreach $discounts as $discount}
+					{if (float)$discount.value_real == 0}
+						{continue}
+					{/if}
 						<tr class="cart_discount {if $discount@last}last_item{elseif $discount@first}first_item{else}item{/if}" id="cart_discount_{$discount.id_discount}">
 							<td class="cart_discount_name" colspan="{if $PS_STOCK_MANAGEMENT}3{else}2{/if}">{$discount.name}</td>
 							<td class="cart_discount_price">
@@ -435,8 +438,10 @@
 
 	{if $show_option_allow_separate_package}
 	<p>
-		<input type="checkbox" name="allow_seperated_package" id="allow_seperated_package" {if $cart->allow_seperated_package}checked="checked"{/if} autocomplete="off"/>
-		<label for="allow_seperated_package">{l s='Send available products first' mod='eu_legal'}</label>
+		<label for="allow_seperated_package" class="checkbox inline">
+			<input type="checkbox" name="allow_seperated_package" id="allow_seperated_package" {if $cart->allow_seperated_package}checked="checked"{/if} autocomplete="off"/>
+			{l s='Send available products first' mod='eu_legal'}
+		</label>
 	</p>
 	{/if}
 
