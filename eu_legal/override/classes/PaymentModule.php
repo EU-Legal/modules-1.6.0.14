@@ -200,7 +200,7 @@ class PaymentModule extends PaymentModuleCore
 					if ($compound_taxes)
 					{
 						$order->total_wrapping_tax_incl = (float)abs($this->context->cart->getOrderTotal(true, Cart::ONLY_WRAPPING, $order->product_list, $id_carrier));
-						$order->total_wrapping_tax_excl = (float)Order::calculateCompundTaxPrice($order->total_wrapping_tax_incl, $taxDetails);
+						$order->total_wrapping_tax_excl = Tools::ps_round((float)Order::calculateCompundTaxPrice($order->total_wrapping_tax_incl, $taxDetails), _PS_PRICE_COMPUTE_PRECISION_);
 					}
 					else
 					{
