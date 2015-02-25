@@ -152,20 +152,15 @@ class EU_Legal extends Module
 			'carriercompare',
 		);
 
-		$warning = false;
 		foreach ($this->modules_not_compatible as $module) {
-
 			if (!Module::isEnabled($module))
 				continue;
 			else {
-				$this->warning .= $this->l('Please disable').': <b>'.$module.'</b><br>';
-				$warning = true;
+				$this->warning .= $this->l('Please disable').': '.$module . ', ';
 			}
 
 		}
 
-		if($warning)
-			$this->warning = $this->l('Warning from EU Legal').': <br>'.$this->warning;
 
 		// available cms pages
 		// [filename => configuration]
