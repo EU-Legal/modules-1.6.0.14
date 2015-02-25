@@ -171,7 +171,7 @@ function displayLegal(view)
         $('.product_list > li').each(function(index, element) {
 			/* add weight-info after right-block availability and delivery-info */
 			var weightinfo = $(element).find('.weight-info').html();
-			if (weightinfo != null) { 
+			if($(element).find('.right-block .weight-info').length <= 0 && weightinfo != null) { 
 				$(element).find('.availability').after('<span class="weight-info eu-legal">'+weightinfo+'</span>');
 			}
 			/* add delivery-info after right-block availability */
