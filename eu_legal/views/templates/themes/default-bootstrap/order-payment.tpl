@@ -23,7 +23,13 @@
 	{addJsDefL name=txtRevocationTermIsNotAccepted}{l s='The revocation terms have not been accepted' mod='eu_legal' js=1}{/addJsDefL}
 
 	{capture name=path}{l s='Your payment method' mod='eu_legal'}{/capture}
-	<h1 class="page-heading">{l s='Please choose your payment method' mod='eu_legal'}</h1>
+	<h1 class="page-heading">{l s='Please choose your payment method' mod='eu_legal'}
+		{if !isset($empty) && !$PS_CATALOG_MODE}
+			<span class="heading-counter">{l s='Your shopping cart contains:' mod='eu_legal'}
+				<span id="summary_products_quantity">{$productNumber} {if $productNumber == 1}{l s='product' mod='eu_legal'}{else}{l s='products' mod='eu_legal'}{/if}</span>
+			</span>
+		{/if}
+	</h1>
 {else}
 	<h1 class="page-heading step-num"><span>3</span> {l s='Please choose your payment method' mod='eu_legal'}</h1>
 {/if}
