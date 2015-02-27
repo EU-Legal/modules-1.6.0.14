@@ -53,6 +53,9 @@ function upgrade_module_1_1_2($eu_legal) {
 	$result &= $eu_legal->deleteOverrides('AdminProductsController');
 	$result &= $eu_legal->addOverride('AdminProductsController');
 	
+	$result &= $eu_legal->deleteOverrides('OrderOpcController');
+	$result &= $eu_legal->addOverride('OrderOpcController');
+	
 	$result &= $eu_legal->deleteOverrides('OrderController');
 	$result &= $eu_legal->addOverride('OrderController');
 
