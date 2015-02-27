@@ -2,7 +2,7 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.2.0
+ * @version   : 1.3.0
  * @date      : 2015 02 25
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
@@ -10,7 +10,7 @@
  * @homepage  : www.onlineshop-module.de | www.silbersaiten.de
  * @license   : http://opensource.org/licenses/osl-3.0.php
  * @changelog : see changelog.txt
- * @compatibility : PS == 1.6.0.12
+ * @compatibility : PS == 1.6.0.13
  */
 
 /* no direct access to this module */
@@ -56,7 +56,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.2.0';
+		$this->version = '1.3.0';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -66,8 +66,8 @@ class EU_Legal extends Module
 
 		// module compliancy: only for exactly one PS version
 		$this->ps_versions_compliancy = array(
-			'min' => '1.6.0.12',
-			'max' => '1.6.0.12'
+			'min' => '1.6.0.13',
+			'max' => '1.6.0.13'
 		);
 
 		// bootstrap baqckoffice functionality
@@ -142,6 +142,25 @@ class EU_Legal extends Module
 				'templates' => array()
 			),
 		);
+
+		// modules not compatible with EU Legal
+		$this->modules_not_compatible = array(
+			'ganalytics',
+			'avalaratax',
+			'attributewizardpro',
+			'crossselling',
+			'carriercompare',
+		);
+
+		foreach ($this->modules_not_compatible as $module) {
+			if (!Module::isEnabled($module))
+				continue;
+			else {
+				$this->warning .= $this->l('Please disable').': '.$module . ', ';
+			}
+
+		}
+
 
 		// available cms pages
 		// [filename => configuration]

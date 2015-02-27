@@ -72,7 +72,7 @@
 															<strong>{$carrier.instance->name|escape:'htmlall':'UTF-8'}</strong>
 														{/foreach}
 														{if isset($carrier.instance->delay[$cookie->id_lang])}
-															<br />{l s='Delivery time:'}&nbsp;{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
+															<br />{l s='Delivery time:' mod='eu_legal'}&nbsp;{$carrier.instance->delay[$cookie->id_lang]|escape:'htmlall':'UTF-8'}
 														{/if}
 													{/if}
 													{if count($option_list) > 1}
@@ -84,7 +84,7 @@
 																<span class="best_grade best_grade_speed">{l s='The fastest' mod='eu_legal'}</span>
 															{/if}
 														{else if $option.is_best_price}
-																<span class="best_grade best_grade_price">{l s='The best price' mod='eu_legal'}</span>
+															<span class="best_grade best_grade_price">{l s='The best price' mod='eu_legal'}</span>
 														{/if}
 													{/if}
 												</td>
@@ -246,7 +246,7 @@
 								</div> <!-- end delivery_option -->
 							{/foreach}
 						</div> <!-- end delivery_options -->
-						<div class="hook_extracarrier" id="HOOK_EXTRACARRIER_{$id_address|escape:'htmlall'}">
+						<div class="hook_extracarrier" id="HOOK_EXTRACARRIER_{$id_address}">
 							{if isset($HOOK_EXTRACARRIER_ADDR) &&  isset($HOOK_EXTRACARRIER_ADDR.$id_address)}{$HOOK_EXTRACARRIER_ADDR.$id_address}{/if}
 						</div>
 						{foreachelse}
