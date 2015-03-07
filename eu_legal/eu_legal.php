@@ -2,15 +2,15 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.3.0
- * @date      : 2015 02 25
+ * @version   : 1.4.0
+ * @date      : 2015 03 07
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
  * @homepage  : www.onlineshop-module.de | www.silbersaiten.de
  * @license   : http://opensource.org/licenses/osl-3.0.php
  * @changelog : see changelog.txt
- * @compatibility : PS == 1.6.0.13
+ * @compatibility : PS == 1.6.0.14
  */
 
 /* no direct access to this module */
@@ -56,7 +56,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.3.0';
+		$this->version = '1.4.0';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -67,7 +67,7 @@ class EU_Legal extends Module
 		// module compliancy: only for exactly one PS version
 		$this->ps_versions_compliancy = array(
 			'min' => '1.6.0.13',
-			'max' => '1.6.0.13'
+			'max' => '1.6.0.14'
 		);
 
 		// bootstrap baqckoffice functionality
