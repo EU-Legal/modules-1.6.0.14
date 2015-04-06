@@ -5,10 +5,12 @@
  * @version   : 1.4.0
  * @date      : 2015 04 03
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
+ * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
  * @homepage  : www.onlineshop-module.de | www.silbersaiten.de
  * @license   : http://opensource.org/licenses/osl-3.0.php
  * @changelog : see changelog.txt
+ * @compatibility : PS == 1.6.0.14
  */
 
 class Hook extends HookCore
@@ -133,5 +135,4 @@ class Hook extends HookCore
 			return $list;
 	}
 }
-
 
