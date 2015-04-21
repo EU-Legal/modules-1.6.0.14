@@ -2,8 +2,8 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.4.0
- * @date      : 2015 03 07
+ * @version   : 1.4.1
+ * @date      : 2015 04 17
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
@@ -56,7 +56,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.4.0';
+		$this->version = '1.4.1';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -289,6 +289,30 @@ class EU_Legal extends Module
 			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_CSS';
 		}
 
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_FULLTAXINFO', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_FULLTAXINFO';
+		}
+
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_FULLUNITPRICE', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_FULLUNITPRICE';
+		}
+
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_DESCINCART', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_DESCINCART';
+		}
+
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_DELIVERYINFO', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_DELIVERYINFO';
+		}
+
 		// set config vars for cms pages
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -518,6 +542,10 @@ class EU_Legal extends Module
 		$return &= Configuration::deleteByName('LEGAL_SHOW_WEIGHTS');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_FANCY');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_FROM');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_FULLTAXINFO');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_FULLUNITPRICE');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_DESCINCART');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_DELIVERYINFO');
 
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -586,6 +614,14 @@ class EU_Legal extends Module
 		$return &= Configuration::updateValue('LEGAL_SHOW_FROM', 0);
 
 		$return &= Configuration::updateValue('LEGAL_SHOW_FANCY', false);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_FULLTAXINFO', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_FULLUNITPRICE', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_DESCINCART', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_DELIVERYINFO', 1);
 
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -820,6 +856,26 @@ class EU_Legal extends Module
 						'type' => 'bool',
 						'title' => $this->l('Show \'From\' before price'),
 						'desc' => $this->l('Show \'From\' before price in product list if product has combinations.'),
+					),
+					'LEGAL_SHOW_FULLTAXINFO' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show tax info'),
+						'desc' => $this->l('Displays the tax info in product listing.'),
+					),
+					'LEGAL_SHOW_FULLUNITPRICE' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show unit price'),
+						'desc' => $this->l('Displays the unit price in product listing.'),
+					),
+					'LEGAL_SHOW_DESCINCART' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show short description'),
+						'desc' => $this->l('Displays the products short description in cart.'),
+					),
+					'LEGAL_SHOW_DELIVERYINFO' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show delivery info'),
+						'desc' => $this->l('Displays a delivery information in cart at the deliverycosts.'),
 					),
 				),
 				'submit' => array(
@@ -1062,6 +1118,18 @@ class EU_Legal extends Module
 			if (!Configuration::updateValue('LEGAL_SHOW_FROM', (bool)Tools::getValue('LEGAL_SHOW_FROM')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FROM';
 
+			if (!Configuration::updateValue('LEGAL_SHOW_FULLTAXINFO', (bool)Tools::getValue('LEGAL_SHOW_FULLTAXINFO')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FULLTAXINFO';
+
+			if (!Configuration::updateValue('LEGAL_SHOW_FULLUNITPRICE', (bool)Tools::getValue('LEGAL_SHOW_FULLUNITPRICE')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FULLUNITPRICE';
+
+			if (!Configuration::updateValue('LEGAL_SHOW_DESCINCART', (bool)Tools::getValue('LEGAL_SHOW_DESCINCART')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_DESCINCART';
+
+			if (!Configuration::updateValue('LEGAL_SHOW_DELIVERYINFO', (bool)Tools::getValue('LEGAL_SHOW_DELIVERYINFO')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_DELIVERYINFO';
+
 			// CMS IDs festlegen
 			if (!Configuration::updateValue('LEGAL_CMS_ID_LEGAL', (int)Tools::getValue('LEGAL_CMS_ID_LEGAL')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_CMS_ID_LEGAL';
@@ -1084,8 +1152,10 @@ class EU_Legal extends Module
 			if (!Configuration::updateValue('LEGAL_CMS_ID_SHIPPING', (int)Tools::getValue('LEGAL_CMS_ID_SHIPPING')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_CMS_ID_SHIPPING';
 
-			if (count($this->_errors) <= 0)
+			if (count($this->_errors) <= 0) {
+				$this->_clearCache('*');
 				return $this->displayConfirmation($this->l('Settings updated'));
+			}
 
 		}
 		elseif (Tools::isSubmit('submitAddCMSPages'))
@@ -2064,7 +2134,9 @@ class EU_Legal extends Module
 				'show_weights' => Configuration::get('LEGAL_SHOW_WEIGHTS'),
 				'show_fancy' => Configuration::get('LEGAL_SHOW_FANCY'),
 				'seo_active' => Configuration::get('PS_REWRITING_SETTINGS'),
-				'show_from' => (bool)Configuration::get('LEGAL_SHOW_FROM') && (bool)$current_id_product_attribute
+				'show_from' => (bool)Configuration::get('LEGAL_SHOW_FROM') && (bool)$current_id_product_attribute,
+				'show_fulltaxinfo' => (bool)Configuration::get('LEGAL_SHOW_FULLTAXINFO'),
+				'show_fullunitprice' => (bool)Configuration::get('LEGAL_SHOW_FULLUNITPRICE'),
 			));
 		}
 		return $this->display(__FILE__, 'displayProductPriceBlock.tpl', $this->getCacheId($cache_key));
@@ -2132,6 +2204,7 @@ class EU_Legal extends Module
 			'shipping_link' => $shipping_link,
 			'show_fancy' => Configuration::get('LEGAL_SHOW_FANCY'),
 			'seo_active' => Configuration::get('PS_REWRITING_SETTINGS'),
+			'legal_show_deliveryinfo' => Configuration::get('LEGAL_SHOW_DELIVERYINFO'),
 		));
 
 		return $this->display(__FILE__, 'displayShippingPrice.tpl');
