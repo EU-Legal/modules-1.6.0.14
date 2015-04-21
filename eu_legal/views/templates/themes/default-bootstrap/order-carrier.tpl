@@ -281,7 +281,7 @@
 					<div class="checkbox recyclable">
 						<label for="recyclable">
 							<input type="checkbox" name="recyclable" id="recyclable" value="1"{if $recyclable == 1} checked="checked"{/if} />
-							{l s='I would like to receive my order in recycled packaging.'}
+							{l s='I would like to receive my order in recycled packaging.' mod='eu_legal'}
 						</label>
 					</div>
 				{/if}
