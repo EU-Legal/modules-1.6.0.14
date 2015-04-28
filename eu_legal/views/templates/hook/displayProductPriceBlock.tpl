@@ -104,7 +104,9 @@
 			<p class="unit-price eu-legal{if isset($show_fullunitprice) and $show_fullunitprice} show{/if}">
 				<span class="unit-price-label">{l s='unit price' mod='eu_legal'}:</span>
 				<span class="unit-price-display">{convertPrice price=$unit_price}</span> {l s='per' mod='eu_legal'} {$product->unity|escape:'html':'UTF-8'} 
-				{if $priceDisplay == 1}{l s='tax excl.' mod='eu_legal'}{else}{l s='tax incl.' mod='eu_legal'}{/if}
+				{if $tax_enabled  && ((isset($display_tax_label) && $display_tax_label == 1) || !isset($display_tax_label))}	
+					{if $priceDisplay == 1}{l s='tax excl.' mod='eu_legal'}{else}{l s='tax incl.' mod='eu_legal'}{/if}
+				{/if}
 			</p>
 		{/if}
 	{else}
@@ -113,7 +115,9 @@
 		<span class="unit-price eu-legal{if isset($show_fullunitprice) and $show_fullunitprice} show{/if}">
 			<span class="unit-price-label">{l s='unit price' mod='eu_legal'}:</span>
 			<span class="unit-price-display">{convertPrice price=$unit_price}</span> {l s='per' mod='eu_legal'} {$product.unity|escape:'html':'UTF-8'} 
-			{if $priceDisplay == 1}{l s='tax excl.' mod='eu_legal'}{else}{l s='tax incl.' mod='eu_legal'}{/if}
+				{if $tax_enabled  && ((isset($display_tax_label) && $display_tax_label == 1) || !isset($display_tax_label))}	
+					{if $priceDisplay == 1}{l s='tax excl.' mod='eu_legal'}{else}{l s='tax incl.' mod='eu_legal'}{/if}
+				{/if}
 		</span>
 		{/if}
 	{/if}
