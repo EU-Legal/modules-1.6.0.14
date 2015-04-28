@@ -85,7 +85,7 @@
 				</tr>
 			</thead>
 			<tfoot>
-				{assign var='rowspan_total' value=2+$total_discounts_num+$total_wrapping_taxes_num}
+				{assign var='rowspan_total' value=3+$total_discounts_num+$total_wrapping_taxes_num}
 
 				{if $use_taxes && $show_taxes && $total_tax != 0}
 					{assign var='rowspan_total' value=$rowspan_total+1}
