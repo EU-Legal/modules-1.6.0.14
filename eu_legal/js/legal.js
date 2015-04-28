@@ -76,7 +76,7 @@ var legal = {
     
     bindPaymentOptionClick: function() {
 	$(document).on('change click', 'input:radio[name=payment_option], .payment-option tr:first-child', function(evt){
-	    evt.preventDefault();
+		
 	    // Hide currently displayed form if there is one
 	    legal.toggleChosenForm(false);
 		
