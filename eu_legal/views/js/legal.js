@@ -122,9 +122,13 @@ function findCombinationLegal() {
 
 function bindGridLegal()
 {
-	var view = $.totalStorage('displayLegal');
+	var view = $.totalStorage('display');
+
+	if (!view && (typeof displayList != 'undefined') && displayList)
+		view = 'list';
+
 	if (view && view != 'grid')
-		displayLegal('view');
+		displayLegal(view);
 	else
 		displayLegal('grid');
 		
@@ -146,7 +150,7 @@ function displayLegal(view)
         $('.product_list > li').each(function(index, element) {
 			/* add delivery-info after center-block availability */
 			var deliveryinfo = $(element).find('.delivery-info').html();
-			if (deliveryinfo != null) { 
+			if ($(element).find('.center-block .delivery-info').length <= 0 && deliveryinfo != null) { 
 				$(element).find('.availability').after('<span class="delivery-info eu-legal">'+deliveryinfo+'</span>');
 			}
 			/* don't duplicate weight-info if already exists */
@@ -163,7 +167,7 @@ function displayLegal(view)
             });
 		});
                 
-        $.totalStorage('displayLegal', 'list');
+        $.totalStorage('display', 'list');
     }
 	/* Grid-View */
     else 
@@ -186,6 +190,6 @@ function displayLegal(view)
 
 		});
                 
-        $.totalStorage('displayLegal', 'grid');
+        $.totalStorage('display', 'grid');
     }    
 }
