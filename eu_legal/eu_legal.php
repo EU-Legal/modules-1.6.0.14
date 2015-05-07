@@ -3,7 +3,7 @@
  * EU Legal - Better security for German and EU merchants.
  *
  * @version   : 1.4.1
- * @date      : 2015 04 17
+ * @date      : 2015 05 07
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
@@ -2034,7 +2034,7 @@ class EU_Legal extends Module
 		else
 			$id_product = (int)$params['product']['id_product'];
 
-		$cache_key = $this->name.'_'.$id_product;
+		$cache_key = $this->name.'|delivery_time|'.$id_product;
 
 		if (!$this->isCached('displayProductDeliveryTime.tpl', $this->getCacheId($cache_key)))
 		{
@@ -2068,13 +2068,18 @@ class EU_Legal extends Module
 		if (!isset($params['product']))
 			return;
 
+		$is_object = '0';
+
 		if ($params['product'] instanceof Product)
 		{
 			$id_product = (int)$params['product']->id;
-			if (isset($params['product']->id_product_attribute))
-				$current_id_product_attribute = (int)$params['product']->id_product_attribute;
+			if (isset($params['product']->cache_default_attribute))
+				$current_id_product_attribute = (int)$params['product']->cache_default_attribute;
 			else
 				$current_id_product_attribute = 0;
+
+			$is_object = '1';
+
 		}
 		else
 		{
@@ -2085,7 +2090,7 @@ class EU_Legal extends Module
 				$current_id_product_attribute = 0;
 		}
 
-		$cache_key = $this->name.'_'.$params['type'].'_'.$id_product.'_'.$current_id_product_attribute;
+		$cache_key = $this->name.'|'.$params['type'].'|'.$id_product.'|'.$current_id_product_attribute.'|'.$is_object;
 
 		if (!$this->isCached('displayProductPriceBlock.tpl', $this->getCacheId($cache_key)))
 		{
@@ -2235,6 +2240,7 @@ class EU_Legal extends Module
 	public function _clearCache($template, $cache_id = null, $compile_id = null)
 	{
 		parent::_clearCache('displayProductPriceBlock.tpl');
+		parent::_clearCache('displayProductDeliveryTime.tpl');
 	}
 
 	/*******************************************************************************************************************
