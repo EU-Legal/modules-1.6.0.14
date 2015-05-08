@@ -100,7 +100,8 @@ class ParentOrderController extends ParentOrderControllerCore
 		$this->context->smarty->assign(array(
 			'is_partially_virtual' => $this->context->cart->containsVirtualProducts(),
 			'PS_EU_PAYMENT_API' => Configuration::get('PS_EU_PAYMENT_API'),
-			'legal_theme_dir' => $this->_legal ? $this->_legal->getCurrentThemeDir() : false
+			'legal_theme_dir' => $this->_legal ? $this->_legal->getCurrentThemeDir() : false,
+			'legal_show_descincart' => Configuration::get('LEGAL_SHOW_DESCINCART'),
 		));
 	}
 
