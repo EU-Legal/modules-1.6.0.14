@@ -31,12 +31,12 @@ class Mail extends MailCore
 			'legal' => 'LEGAL_CMS_ID_LEGAL' // Legal: Imprint
 		);
 
-		$type = Configuration::get('PS_MAIL_TYPE');
+		$type = Configuration::get('PS_MAIL_TYPE', null, null, $id_shop);
 
 		foreach ($additional_cms as $key => $row)
 		{
 
-			$html = CMS::getContentFromId(Configuration::get($row), (int)$id_lang);
+			$html = CMS::getContentFromId(Configuration::get($row, null, null, $id_shop), (int)$id_lang);
 
 			if ($type == Mail::TYPE_BOTH || $type == Mail::TYPE_HTML)
 				$template_vars['{cms_'.$key.'}'] = $html;

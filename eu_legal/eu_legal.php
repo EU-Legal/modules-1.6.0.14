@@ -2,8 +2,8 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.4.0
- * @date      : 2015 03 07
+ * @version   : 1.4.1
+ * @date      : 2015 05 07
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
@@ -56,7 +56,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.4.0';
+		$this->version = '1.4.1';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -289,6 +289,30 @@ class EU_Legal extends Module
 			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_CSS';
 		}
 
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_FULLTAXINFO', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_FULLTAXINFO';
+		}
+
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_FULLUNITPRICE', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_FULLUNITPRICE';
+		}
+
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_DESCINCART', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_DESCINCART';
+		}
+
+		if ($return && !Configuration::updateValue('LEGAL_SHOW_DELIVERYINFO', 1))
+		{
+			$return &= false;
+			$this->_errors[] = $this->l('Could not update config value:').' LEGAL_SHOW_DELIVERYINFO';
+		}
+
 		// set config vars for cms pages
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -518,6 +542,10 @@ class EU_Legal extends Module
 		$return &= Configuration::deleteByName('LEGAL_SHOW_WEIGHTS');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_FANCY');
 		$return &= Configuration::deleteByName('LEGAL_SHOW_FROM');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_FULLTAXINFO');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_FULLUNITPRICE');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_DESCINCART');
+		$return &= Configuration::deleteByName('LEGAL_SHOW_DELIVERYINFO');
 
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -586,6 +614,14 @@ class EU_Legal extends Module
 		$return &= Configuration::updateValue('LEGAL_SHOW_FROM', 0);
 
 		$return &= Configuration::updateValue('LEGAL_SHOW_FANCY', false);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_FULLTAXINFO', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_FULLUNITPRICE', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_DESCINCART', 1);
+
+		$return &= Configuration::updateValue('LEGAL_SHOW_DELIVERYINFO', 1);
 
 		foreach ($this->cms_pages as $cms_page)
 			if (strpos($cms_page['config'], $this->config_prefix) === 0)
@@ -820,6 +856,26 @@ class EU_Legal extends Module
 						'type' => 'bool',
 						'title' => $this->l('Show \'From\' before price'),
 						'desc' => $this->l('Show \'From\' before price in product list if product has combinations.'),
+					),
+					'LEGAL_SHOW_FULLTAXINFO' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show tax info'),
+						'desc' => $this->l('Displays the tax info in product listing.'),
+					),
+					'LEGAL_SHOW_FULLUNITPRICE' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show unit price'),
+						'desc' => $this->l('Displays the unit price in product listing.'),
+					),
+					'LEGAL_SHOW_DESCINCART' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show short description'),
+						'desc' => $this->l('Displays the products short description in cart.'),
+					),
+					'LEGAL_SHOW_DELIVERYINFO' => array(
+						'type' => 'bool',
+						'title' => $this->l('Show delivery info'),
+						'desc' => $this->l('Displays a delivery information in cart at the deliverycosts.'),
 					),
 				),
 				'submit' => array(
@@ -1062,6 +1118,18 @@ class EU_Legal extends Module
 			if (!Configuration::updateValue('LEGAL_SHOW_FROM', (bool)Tools::getValue('LEGAL_SHOW_FROM')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FROM';
 
+			if (!Configuration::updateValue('LEGAL_SHOW_FULLTAXINFO', (bool)Tools::getValue('LEGAL_SHOW_FULLTAXINFO')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FULLTAXINFO';
+
+			if (!Configuration::updateValue('LEGAL_SHOW_FULLUNITPRICE', (bool)Tools::getValue('LEGAL_SHOW_FULLUNITPRICE')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_FULLUNITPRICE';
+
+			if (!Configuration::updateValue('LEGAL_SHOW_DESCINCART', (bool)Tools::getValue('LEGAL_SHOW_DESCINCART')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_DESCINCART';
+
+			if (!Configuration::updateValue('LEGAL_SHOW_DELIVERYINFO', (bool)Tools::getValue('LEGAL_SHOW_DELIVERYINFO')))
+				$this->_errors[] = $this->l('Could not update').': LEGAL_SHOW_DELIVERYINFO';
+
 			// CMS IDs festlegen
 			if (!Configuration::updateValue('LEGAL_CMS_ID_LEGAL', (int)Tools::getValue('LEGAL_CMS_ID_LEGAL')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_CMS_ID_LEGAL';
@@ -1084,8 +1152,10 @@ class EU_Legal extends Module
 			if (!Configuration::updateValue('LEGAL_CMS_ID_SHIPPING', (int)Tools::getValue('LEGAL_CMS_ID_SHIPPING')))
 				$this->_errors[] = $this->l('Could not update').': LEGAL_CMS_ID_SHIPPING';
 
-			if (count($this->_errors) <= 0)
+			if (count($this->_errors) <= 0) {
+				$this->_clearCache('*');
 				return $this->displayConfirmation($this->l('Settings updated'));
+			}
 
 		}
 		elseif (Tools::isSubmit('submitAddCMSPages'))
@@ -1482,210 +1552,6 @@ class EU_Legal extends Module
 		return '';
 	}
 
-	public function deleteOverrides($classname) {
-
-		$path = PrestaShopAutoload::getInstance()->getClassPath($classname.'Core');
-
-		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
-			return true;
-
-		// Get a uniq id for the class, because you can override a class (or remove the override) twice in the same session and we need to avoid redeclaration
-		do $uniq = uniqid();
-		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
-
-		$module_file = file($this->getLocalPath().'override/'.$path);
-		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'(\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?)?#i'), array(' ', 'class '.$classname.'Override_remove'.$uniq), implode('', $module_file)));
-		$module_class = new ReflectionClass($classname.'Override_remove'.$uniq);
-
-		foreach ($module_class->getMethods() as $method) {
-			
-			$this->deleteOverrideMethod($classname, $method->getName());
-
-		}
-
-		// Remove properties from override file
-		foreach ($module_class->getProperties() as $property) {
-
-			$this->deleteOverrideProperty($classname, $property->getName());
-
-		}
-
-		// Remove constants from override file
-		foreach ($module_class->getConstants() as $constant => $value) {
-
-			$this->deleteOverrideConstant($classname, $constant);
-			
-		}
-
-		return true;
-
-	}
-
-	public function deleteOverrideMethod($classname, $function)
-	{
-		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
-			return true;
-
-		// Check if override file is writable
-		$override_path = _PS_ROOT_DIR_.'/'.PrestaShopAutoload::getInstance()->getClassPath($classname);
-		if (!is_writable($override_path))
-			return false;
-
-		do $uniq = uniqid();
-		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
-
-		// Make a reflection of the override class and the module override class
-		$override_file = file($override_path);
-		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal_delete'.$uniq), implode('', $override_file)));
-		$override_class = new ReflectionClass($classname.'OverrideOriginal_delete'.$uniq);
-
-		// Remove methods from override file
-		$override_file = file($override_path);
-
-		if (!$override_class->hasMethod($function))
-			return false;
-
-		$method = $override_class->getMethod($function);
-		$length = $method->getEndLine() - $method->getStartLine() + 1;
-		array_splice($override_file, $method->getStartLine() - 1, $length, array_pad(array(), $length, '#--remove--#'));
-
-		if (preg_match('/\* module: ('.$this->name.')/ism', $override_file[$method->getStartLine() - 5]))
-			$override_file[$method->getStartLine() - 7] = $override_file[$method->getStartLine() - 6] = $override_file[$method->getStartLine() - 5] = $override_file[$method->getStartLine() - 4] = $override_file[$method->getStartLine() - 3] =  $override_file[$method->getStartLine() - 2] = '#--remove--#';
-		
-		// Rewrite nice code
-		$code = '';
-		foreach ($override_file as $line)
-		{
-			if ($line == '#--remove--#')
-				continue;
-
-			$code .= $line;
-		}
-
-		$to_delete = preg_match('/<\?(?:php)?\s+class\s+'.$classname.'\s+extends\s+'.$classname.'Core\s*?[{]\s*?[}]/ism', $code);
-
-		if ($to_delete)
-			unlink($override_path);
-		else
-			file_put_contents($override_path, $code);
-
-		// Re-generate the class index
-		Tools::generateIndex();
-
-		return true;
-	}
-
-	public function deleteOverrideProperty($classname, $property)
-	{
-		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
-			return true;
-
-		// Check if override file is writable
-		$override_path = _PS_ROOT_DIR_.'/'.PrestaShopAutoload::getInstance()->getClassPath($classname);
-		if (!is_writable($override_path))
-			return false;
-
-		do $uniq = uniqid();
-		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
-
-		// Make a reflection of the override class and the module override class
-		$override_file = file($override_path);
-		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal_delete'.$uniq), implode('', $override_file)));
-		$override_class = new ReflectionClass($classname.'OverrideOriginal_delete'.$uniq);
-
-		// Remove methods from override file
-		$override_file = file($override_path);
-
-		if (!$override_class->hasProperty($property))
-			return true;
-
-		// Remplacer la ligne de declaration par "remove"
-		foreach ($override_file as $line_number => &$line_content)
-			if (preg_match('/(public|private|protected)\s+(static\s+)?(\$)?'.$property.'/i', $line_content))
-			{
-				if (preg_match('/\* module: ('.$this->name.')/ism', $override_file[$line_number - 5]))
-					$override_file[$line_number - 7] = $override_file[$line_number - 6] = $override_file[$line_number - 5] = $override_file[$line_number - 4] = $override_file[$line_number - 3] =  $override_file[$line_number - 2] = '#--remove--#';
-				$line_content = '#--remove--#';
-				break;
-			}
-
-		// Rewrite nice code
-		$code = '';
-		foreach ($override_file as $line)
-		{
-			if ($line == '#--remove--#')
-				continue;
-
-			$code .= $line;
-		}
-
-		$to_delete = preg_match('/<\?(?:php)?\s+class\s+'.$classname.'\s+extends\s+'.$classname.'Core\s*?[{]\s*?[}]/ism', $code);
-
-		if ($to_delete)
-			unlink($override_path);
-		else
-			file_put_contents($override_path, $code);
-
-		// Re-generate the class index
-		Tools::generateIndex();
-
-		return true;
-	}
-
-
-	public function deleteOverrideConstant($classname, $constant)
-	{
-		if (!PrestaShopAutoload::getInstance()->getClassPath($classname))
-			return true;
-
-		// Check if override file is writable
-		$override_path = _PS_ROOT_DIR_.'/'.PrestaShopAutoload::getInstance()->getClassPath($classname);
-		if (!is_writable($override_path))
-			return false;
-
-		do $uniq = uniqid();
-		while (class_exists($classname.'OverrideOriginal_delete'.$uniq, false));
-
-		// Make a reflection of the override class and the module override class
-		$override_file = file($override_path);
-		eval(preg_replace(array('#^\s*<\?(?:php)?#', '#class\s+'.$classname.'\s+extends\s+([a-z0-9_]+)(\s+implements\s+([a-z0-9_]+))?#i'), array(' ', 'class '.$classname.'OverrideOriginal_delete'.$uniq), implode('', $override_file)));
-		$override_class = new ReflectionClass($classname.'OverrideOriginal_delete'.$uniq);
-
-		$override_file = file($override_path);
-
-		if (!$override_class->hasConstant($constant))
-			return true;
-
-		// Remplacer la ligne de declaration par "remove"
-		foreach ($override_file as $line_number => &$line_content)
-			if (preg_match('/(const)\s+'.$constant.'/i', $line_content))
-			{
-				$line_content = '#--remove--#';
-				break;
-			}
-
-		// Rewrite nice code
-		$code = '';
-		foreach ($override_file as $line)
-		{
-			if ($line == '#--remove--#')
-				continue;
-
-			$code .= $line;
-		}
-
-		$to_delete = preg_match('/<\?(?:php)?\s+class\s+'.$classname.'\s+extends\s+'.$classname.'Core\s*?[{]\s*?[}]/ism', $code);
-
-		if ($to_delete)
-			unlink($override_path);
-		else
-			file_put_contents($override_path, $code);
-
-		// Re-generate the class index
-		Tools::generateIndex();
-
-		return true;
-	}
 
 	/* Nur temporär, kann in zukünftigen Versionen entfernt werden. Problem mit Upgrade und Overrides */
 	public function addOverride($classname)
@@ -1964,7 +1830,7 @@ class EU_Legal extends Module
 		else
 			$id_product = (int)$params['product']['id_product'];
 
-		$cache_key = $this->name.'_'.$id_product;
+		$cache_key = $this->name.'|delivery_time|'.$id_product;
 
 		if (!$this->isCached('displayProductDeliveryTime.tpl', $this->getCacheId($cache_key)))
 		{
@@ -1998,13 +1864,18 @@ class EU_Legal extends Module
 		if (!isset($params['product']))
 			return;
 
+		$is_object = '0';
+
 		if ($params['product'] instanceof Product)
 		{
 			$id_product = (int)$params['product']->id;
-			if (isset($params['product']->id_product_attribute))
-				$current_id_product_attribute = (int)$params['product']->id_product_attribute;
+			if (isset($params['product']->cache_default_attribute))
+				$current_id_product_attribute = (int)$params['product']->cache_default_attribute;
 			else
 				$current_id_product_attribute = 0;
+
+			$is_object = '1';
+
 		}
 		else
 		{
@@ -2015,7 +1886,7 @@ class EU_Legal extends Module
 				$current_id_product_attribute = 0;
 		}
 
-		$cache_key = $this->name.'_'.$params['type'].'_'.$id_product.'_'.$current_id_product_attribute;
+		$cache_key = $this->name.'|'.$params['type'].'|'.$id_product.'|'.$current_id_product_attribute.'|'.$is_object;
 
 		if (!$this->isCached('displayProductPriceBlock.tpl', $this->getCacheId($cache_key)))
 		{
@@ -2064,7 +1935,9 @@ class EU_Legal extends Module
 				'show_weights' => Configuration::get('LEGAL_SHOW_WEIGHTS'),
 				'show_fancy' => Configuration::get('LEGAL_SHOW_FANCY'),
 				'seo_active' => Configuration::get('PS_REWRITING_SETTINGS'),
-				'show_from' => (bool)Configuration::get('LEGAL_SHOW_FROM') && (bool)$current_id_product_attribute
+				'show_from' => (bool)Configuration::get('LEGAL_SHOW_FROM') && (bool)$current_id_product_attribute,
+				'show_fulltaxinfo' => (bool)Configuration::get('LEGAL_SHOW_FULLTAXINFO'),
+				'show_fullunitprice' => (bool)Configuration::get('LEGAL_SHOW_FULLUNITPRICE'),
 			));
 		}
 		return $this->display(__FILE__, 'displayProductPriceBlock.tpl', $this->getCacheId($cache_key));
@@ -2132,6 +2005,7 @@ class EU_Legal extends Module
 			'shipping_link' => $shipping_link,
 			'show_fancy' => Configuration::get('LEGAL_SHOW_FANCY'),
 			'seo_active' => Configuration::get('PS_REWRITING_SETTINGS'),
+			'legal_show_deliveryinfo' => Configuration::get('LEGAL_SHOW_DELIVERYINFO'),
 		));
 
 		return $this->display(__FILE__, 'displayShippingPrice.tpl');
@@ -2162,6 +2036,7 @@ class EU_Legal extends Module
 	public function _clearCache($template, $cache_id = null, $compile_id = null)
 	{
 		parent::_clearCache('displayProductPriceBlock.tpl');
+		parent::_clearCache('displayProductDeliveryTime.tpl');
 	}
 
 	/*******************************************************************************************************************

@@ -29,7 +29,7 @@
 			<input type="hidden" value="{$order->id}" name="id_order"/>
 			<input type="hidden" value="" name="submitReorder"/>
 
-				<a href="#" onclick="$(this).closest('form').submit(); return false;" class="button btn btn-default button-medium pull-right"><span>{l s='Reorder'}<i class="icon-chevron-right right"></i></span></a>
+				<a href="#" onclick="$(this).closest('form').submit(); return false;" class="button btn btn-default button-medium pull-right"><span>{l s='Reorder' mod='eu_legal'}<i class="icon-chevron-right right"></i></span></a>
 			<p class="dark">
 				<strong>{l s='Order Reference %s - placed on' sprintf=$order->getUniqReference()} {dateFormat date=$order->date_add full=0}</strong>
 			</p>
@@ -38,31 +38,31 @@
 </div>
 {/if}
 <div class="info-order box">
-	{if $carrier->id}<p><strong class="dark">{l s='Carrier'}</strong> {if $carrier->name == "0"}{$shop_name|escape:'html':'UTF-8'}{else}{$carrier->name|escape:'html':'UTF-8'}{/if}</p>{/if}
-	<p><strong class="dark">{l s='Payment method'}</strong> <span class="color-myaccount">{$order->payment|escape:'html':'UTF-8'}</span></p>
+	{if $carrier->id}<p><strong class="dark">{l s='Carrier' mod='eu_legal'}</strong> {if $carrier->name == "0"}{$shop_name|escape:'html':'UTF-8'}{else}{$carrier->name|escape:'html':'UTF-8'}{/if}</p>{/if}
+	<p><strong class="dark">{l s='Payment method' mod='eu_legal'}</strong> <span class="color-myaccount">{$order->payment|escape:'html':'UTF-8'}</span></p>
 	{if $invoice AND $invoiceAllowed}
 	<p>
 		<i class="icon-file-text"></i>
-		<a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order={$order->id|intval}{if $is_guest}&amp;secure_key={$order->secure_key|escape:'html':'UTF-8'}{/if}">{l s='Download your invoice as a PDF file.'}</a>
+		<a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order={$order->id|intval}{if $is_guest}&amp;secure_key={$order->secure_key|escape:'html':'UTF-8'}{/if}">{l s='Download your invoice as a PDF file.' mod='eu_legal'}</a>
 	</p>
 	{/if}
 	{if $order->recyclable}
-	<p><i class="icon-repeat"></i>&nbsp;{l s='You have given permission to receive your order in recycled packaging.'}</p>
+	<p><i class="icon-repeat"></i>&nbsp;{l s='You have given permission to receive your order in recycled packaging.' mod='eu_legal'}</p>
 	{/if}
 	{if $order->gift}
-		<p><i class="icon-gift"></i>&nbsp;{l s='You have requested gift wrapping for this order.'}</p>
-		<p><strong class="dark">{l s='Message'}</strong> {$order->gift_message|nl2br}</p>
+		<p><i class="icon-gift"></i>&nbsp;{l s='You have requested gift wrapping for this order.' mod='eu_legal'}</p>
+		<p><strong class="dark">{l s='Message' mod='eu_legal'}</strong> {$order->gift_message|nl2br}</p>
 	{/if}
 </div>
 
 {if count($order_history)}
-<h1 class="page-heading">{l s='Follow your order\'s status step-by-step'}</h1>
+<h1 class="page-heading">{l s='Follow your order\'s status step-by-step' mod='eu_legal'}</h1>
 <div class="table_block">
 	<table class="detail_step_by_step table table-bordered">
 		<thead>
 			<tr>
-				<th class="first_item">{l s='Date'}</th>
-				<th class="last_item">{l s='Status'}</th>
+				<th class="first_item">{l s='Date' mod='eu_legal'}</th>
+				<th class="last_item">{l s='Status' mod='eu_legal'}</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -78,7 +78,7 @@
 {/if}
 
 {if isset($followup)}
-<p class="bold">{l s='Click the following link to track the delivery of your order'}</p>
+<p class="bold">{l s='Click the following link to track the delivery of your order' mod='eu_legal'}</p>
 <a href="{$followup|escape:'html':'UTF-8'}">{$followup|escape:'html':'UTF-8'}</a>
 {/if}
 
@@ -86,7 +86,7 @@
 	<div class="row">
 		<div class="col-xs-12 col-sm-6"{if $order->isVirtual()} style="display:none;"{/if}>
 			<ul class="address alternate_item box">
-				<li><h3 class="page-subheading">{l s='Delivery address'} ({$address_delivery->alias})</h3></li>
+				<li><h3 class="page-subheading">{l s='Delivery address' mod='eu_legal'} ({$address_delivery->alias})</h3></li>
 				{foreach from=$dlv_adr_fields name=dlv_loop item=field_item}
 					{if $field_item eq "company" && isset($address_delivery->company)}<li class="address_company">{$address_delivery->company|escape:'html':'UTF-8'}</li>
 					{elseif $field_item eq "address2" && $address_delivery->address2}<li class="address_address2">{$address_delivery->address2|escape:'html':'UTF-8'}</li>
@@ -100,7 +100,7 @@
 		</div>
 		<div class="col-xs-12 col-sm-6">
 			<ul class="address item {if $order->isVirtual()}full_width{/if} box">
-				<li><h3 class="page-subheading">{l s='Invoice address'} ({$address_invoice->alias})</h3></li>
+				<li><h3 class="page-subheading">{l s='Invoice address' mod='eu_legal'} ({$address_invoice->alias})</h3></li>
 				{foreach from=$inv_adr_fields name=inv_loop item=field_item}
 					{if $field_item eq "company" && isset($address_invoice->company)}<li class="address_company">{$address_invoice->company|escape:'html':'UTF-8'}</li>
 					{elseif $field_item eq "address2" && $address_invoice->address2}<li class="address_address2">{$address_invoice->address2|escape:'html':'UTF-8'}</li>
@@ -121,21 +121,21 @@
 		<thead>
 			<tr>
 				{if $return_allowed}<th class="first_item"><input type="checkbox" /></th>{/if}
-				<th class="{if $return_allowed}item{else}first_item{/if}">{l s='Reference'}</th>
-				<th class="item">{l s='Product'}</th>
-				<th class="item">{l s='Quantity'}</th>
+				<th class="{if $return_allowed}item{else}first_item{/if}">{l s='Reference' mod='eu_legal'}</th>
+				<th class="item">{l s='Product' mod='eu_legal'}</th>
+				<th class="item">{l s='Quantity' mod='eu_legal'}</th>
 				{if $order->hasProductReturned()}
-					<th class="item">{l s='Returned'}</th>
+					<th class="item">{l s='Returned' mod='eu_legal'}</th>
 				{/if}
-				<th class="item">{l s='Unit price'}</th>
-				<th class="last_item">{l s='Total price'}</th>
+				<th class="item">{l s='Unit price' mod='eu_legal'}</th>
+				<th class="last_item">{l s='Total price' mod='eu_legal'}</th>
 			</tr>
 		</thead>
 		<tfoot>
 			{if $priceDisplay && $use_tax}
 				<tr class="item">
 					<td colspan="{if $return_allowed}2{else}1{/if}">
-						<strong>{l s='Items (tax excl.)'}</strong>
+						<strong>{l s='Items (tax excl.)' mod='eu_legal'}</strong>
 					</td>
 					<td colspan="{if $order->hasProductReturned()}5{else}4{/if}">
 						<span class="price">{displayWtPriceWithCurrency price=$order->getTotalProductsWithoutTaxes() currency=$currency}</span>
@@ -144,7 +144,7 @@
 			{/if}
 			<tr class="item">
 				<td colspan="{if $return_allowed}2{else}1{/if}">
-					<strong>{l s='Items'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
+					<strong>{l s='Items' mod='eu_legal'} {if $use_tax}{l s='(tax incl.)' mod='eu_legal'}{/if} </strong>
 				</td>
 				<td colspan="{if $order->hasProductReturned()}5{else}4{/if}">
 					<span class="price">{displayWtPriceWithCurrency price=$order->getTotalProductsWithTaxes() currency=$currency}</span>
@@ -153,7 +153,7 @@
 			{if $order->total_discounts > 0}
 			<tr class="item">
 				<td colspan="{if $return_allowed}2{else}1{/if}">
-					<strong>{l s='Total vouchers'}</strong>
+					<strong>{l s='Total vouchers' mod='eu_legal'}</strong>
 				</td>
 				<td colspan="{if $order->hasProductReturned()}5{else}4{/if}">
 					<span class="price-discount">{displayWtPriceWithCurrency price=($order->total_discounts * -1) currency=$currency convert=1}</span>
@@ -163,7 +163,7 @@
 			{if $order->total_wrapping > 0}
 			<tr class="item">
 				<td colspan="{if $return_allowed}2{else}1{/if}">
-					<strong>{l s='Total gift wrapping cost'}</strong>
+					<strong>{l s='Total gift wrapping cost' mod='eu_legal'}</strong>
 				</td>
 				<td colspan="{if $order->hasProductReturned()}5{else}4{/if}">
 					<span class="price-wrapping">{displayWtPriceWithCurrency price=$order->total_wrapping currency=$currency}</span>
@@ -172,7 +172,7 @@
 			{/if}
 			<tr class="item">
 				<td colspan="{if $return_allowed}2{else}1{/if}">
-					<strong>{l s='Shipping & handling'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
+					<strong>{l s='Shipping & handling' mod='eu_legal'} {if $use_tax}{l s='(tax incl.)' mod='eu_legal'}{/if} </strong>
 				</td>
 				<td colspan="{if $order->hasProductReturned()}5{else}4{/if}">
 					<span class="price-shipping">{displayWtPriceWithCurrency price=$order->total_shipping currency=$currency}</span>
@@ -180,7 +180,7 @@
 			</tr>
 			<tr class="totalprice item">
 				<td colspan="{if $return_allowed}2{else}1{/if}">
-					<strong>{l s='Total'}</strong>
+					<strong>{l s='Total' mod='eu_legal'}</strong>
 				</td>
 				<td colspan="{if $order->hasProductReturned()}5{else}4{/if}">
 					<span class="price">{displayWtPriceWithCurrency price=$order->total_paid currency=$currency}</span>
@@ -288,16 +288,16 @@
 							<label for="cb_{$product.id_order_detail|intval}">
 								{if $product.download_hash && $logable && $product.display_filename != '' && $product.product_quantity_refunded == 0 && $product.product_quantity_return == 0}
 									{if isset($is_guest) && $is_guest}
-									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&amp;id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}">
+									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&amp;id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html':'UTF-8'}" title="{l s='Download this product' mod='eu_legal'}">
 									{else}
-										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}">
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html':'UTF-8'}" title="{l s='Download this product' mod='eu_legal'}">
 									{/if}
-										<img src="{$img_dir}icon/download_product.gif" class="icon" alt="{l s='Download product'}" />
+										<img src="{$img_dir}icon/download_product.gif" class="icon" alt="{l s='Download product' mod='eu_legal'}" />
 									</a>
 									{if isset($is_guest) && $is_guest}
-										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html':'UTF-8'}" title="{l s='Download this product' mod='eu_legal'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
 									{else}
-									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
+									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html':'UTF-8'}" title="{l s='Download this product' mod='eu_legal'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
 									{/if}
 								{else}
 									{$product.product_name|escape:'html':'UTF-8'}
@@ -341,7 +341,7 @@
 		{foreach from=$discounts item=discount}
 			<tr class="item">
 				<td>{$discount.name|escape:'html':'UTF-8'}</td>
-				<td>{l s='Voucher'} {$discount.name|escape:'html':'UTF-8'}</td>
+				<td>{l s='Voucher' mod='eu_legal'} {$discount.name|escape:'html':'UTF-8'}</td>
 				<td><span class="order_qte_span editable">1</span></td>
 				<td>&nbsp;</td>
                 <td>{convertPriceWithCurrency price=$discount.value * -1 currency=$currency}</td>
@@ -355,13 +355,13 @@
 </div>
 {if $return_allowed}
 	<div id="returnOrderMessage">
-		<h3 class="page-heading bottom-indent">{l s='Merchandise return'}</h3>
-		<p>{l s='If you wish to return one or more products, please mark the corresponding boxes and provide an explanation for the return. When complete, click the button below.'}</p>
+		<h3 class="page-heading bottom-indent">{l s='Merchandise return' mod='eu_legal'}</h3>
+		<p>{l s='If you wish to return one or more products, please mark the corresponding boxes and provide an explanation for the return. When complete, click the button below.' mod='eu_legal'}</p>
 		<p class="form-group">
 			<textarea class="form-control" cols="67" rows="3" name="returnText"></textarea>
 		</p>
 		<p class="form-group">
-			<button type="submit" name="submitReturnMerchandise" class="btn btn-default button button-small"><span>{l s='Make an RMA slip'}<i class="icon-chevron-right right"></i></span></button>
+			<button type="submit" name="submitReturnMerchandise" class="btn btn-default button button-small"><span>{l s='Make an RMA slip' mod='eu_legal'}<i class="icon-chevron-right right"></i></span></button>
 			<input type="hidden" class="hidden" value="{$order->id|intval}" name="id_order" />
 		</p>
 	</div>
@@ -372,11 +372,11 @@
 	<table class="table table-bordered footab">
 		<thead>
 			<tr>
-				<th class="first_item">{l s='Date'}</th>
-				<th class="item" data-sort-ignore="true">{l s='Carrier'}</th>
-				<th data-hide="phone" class="item">{l s='Weight'}</th>
-				<th data-hide="phone" class="item">{l s='Shipping cost'}</th>
-				<th data-hide="phone" class="last_item" data-sort-ignore="true">{l s='Tracking number'}</th>
+				<th class="first_item">{l s='Date' mod='eu_legal'}</th>
+				<th class="item" data-sort-ignore="true">{l s='Carrier' mod='eu_legal'}</th>
+				<th data-hide="phone" class="item">{l s='Weight' mod='eu_legal'}</th>
+				<th data-hide="phone" class="item">{l s='Shipping cost' mod='eu_legal'}</th>
+				<th data-hide="phone" class="last_item" data-sort-ignore="true">{l s='Tracking number' mod='eu_legal'}</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -396,13 +396,13 @@
 {/if}
 {if !$is_guest}
 	{if count($messages)}
-	<h3 class="page-heading">{l s='Messages'}</h3>
+	<h3 class="page-heading">{l s='Messages' mod='eu_legal'}</h3>
 	 <div class="table_block">
 		<table class="detail_step_by_step table table-bordered">
 			<thead>
 				<tr>
-					<th class="first_item" style="width:150px;">{l s='From'}</th>
-					<th class="last_item">{l s='Message'}</th>
+					<th class="first_item" style="width:150px;">{l s='From' mod='eu_legal'}</th>
+					<th class="last_item">{l s='Message' mod='eu_legal'}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -440,16 +440,16 @@
 	{/if}
 	{if isset($message_confirmation) && $message_confirmation}
 	<p class="alert alert-success">
-		{l s='Message successfully sent'}
+		{l s='Message successfully sent' mod='eu_legal'}
 	</p>
 	{/if}
 	<form action="{$link->getPageLink('order-detail', true)|escape:'html':'UTF-8'}" method="post" class="std" id="sendOrderMessage">
-		<h3 class="page-heading bottom-indent">{l s='Add a message'}</h3>
-		<p>{l s='If you would like to add a comment about your order, please write it in the field below.'}</p>
+		<h3 class="page-heading bottom-indent">{l s='Add a message' mod='eu_legal'}</h3>
+		<p>{l s='If you would like to add a comment about your order, please write it in the field below.' mod='eu_legal'}</p>
 		<p class="form-group">
-		<label for="id_product">{l s='Product'}</label>
+		<label for="id_product">{l s='Product' mod='eu_legal'}</label>
 			<select name="id_product" class="form-control">
-				<option value="0">{l s='-- Choose --'}</option>
+				<option value="0">{l s='-- Choose --' mod='eu_legal'}</option>
 				{foreach from=$products item=product name=products}
 					<option value="{$product.product_id}">{$product.product_name}</option>
 				{/foreach}
@@ -460,11 +460,11 @@
 		</p>
 		<div class="submit">
 			<input type="hidden" name="id_order" value="{$order->id|intval}" />
-			<input type="submit" class="unvisible" name="submitMessage" value="{l s='Send'}"/>
-			<button type="submit" name="submitMessage" class="button btn btn-default button-medium"><span>{l s='Send'}<i class="icon-chevron-right right"></i></span></button>
+			<input type="submit" class="unvisible" name="submitMessage" value="{l s='Send' mod='eu_legal'}"/>
+			<button type="submit" name="submitMessage" class="button btn btn-default button-medium"><span>{l s='Send' mod='eu_legal'}<i class="icon-chevron-right right"></i></span></button>
 		</div>
 	</form>
 {else}
-<p class="alert alert-info"><i class="icon-info-sign"></i>{l s='You cannot return merchandise with a guest account'}</p>
+<p class="alert alert-info"><i class="icon-info-sign"></i>{l s='You cannot return merchandise with a guest account' mod='eu_legal'}</p>
 {/if}
 {/if}

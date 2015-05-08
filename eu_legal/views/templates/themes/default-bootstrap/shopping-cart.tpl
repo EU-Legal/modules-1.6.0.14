@@ -85,7 +85,7 @@
 				</tr>
 			</thead>
 			<tfoot>
-				{assign var='rowspan_total' value=2+$total_discounts_num+$total_wrapping_taxes_num}
+				{assign var='rowspan_total' value=3+$total_discounts_num+$total_wrapping_taxes_num}
 
 				{if $use_taxes && $show_taxes && $total_tax != 0}
 					{assign var='rowspan_total' value=$rowspan_total+1}
@@ -321,7 +321,7 @@
 					{assign var='odd' value=($odd+1)%2}
 					{assign var='ignoreProductLast' value=isset($customizedDatas.$productId.$productAttributeId) || count($gift_products)}
 					{* Display the product line *}
-					{include file="$tpl_dir./shopping-cart-product-line.tpl" productLast=$product@last productFirst=$product@first}
+					{include file="$legal_theme_dir./shopping-cart-product-line.tpl" productLast=$product@last productFirst=$product@first}
 					{* Then the customized datas ones*}
 					{if isset($customizedDatas.$productId.$productAttributeId)}
 						{foreach $customizedDatas.$productId.$productAttributeId[$product.id_address_delivery] as $id_customization=>$customization}
@@ -413,7 +413,7 @@
 						{/foreach}
 
 						{* If it exists also some uncustomized products *}
-						{if $product.quantity-$quantityDisplayed > 0}{include file="$tpl_dir./shopping-cart-product-line.tpl" productLast=$product@last productFirst=$product@first}{/if}
+						{if $product.quantity-$quantityDisplayed > 0}{include file="$legal_theme_dir./shopping-cart-product-line.tpl" productLast=$product@last productFirst=$product@first}{/if}
 					{/if}
 				{/foreach}
 				{assign var='last_was_odd' value=$product@iteration%2}
@@ -425,7 +425,7 @@
 					{assign var='ignoreProductLast' value=isset($customizedDatas.$productId.$productAttributeId)}
 					{assign var='cannotModify' value=1}
 					{* Display the gift product line *}
-					{include file="$tpl_dir./shopping-cart-product-line.tpl" productLast=$product@last productFirst=$product@first}
+					{include file="$legal_theme_dir./shopping-cart-product-line.tpl" productLast=$product@last productFirst=$product@first}
 				{/foreach}
 			</tbody>
 			{if sizeof($discounts)}

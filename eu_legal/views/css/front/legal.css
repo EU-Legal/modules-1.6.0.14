@@ -3,6 +3,10 @@
 	text-decoration: underline
 }
 
+.cart_shipping_info {
+	font-size: 0.8em;
+}
+
 /* display price infos smaller */
 .tax-shipping-info, 
 .unit-price,
@@ -50,6 +54,11 @@ ul.product_list.grid .left-block .weight-info {
 	ul.product_list.grid .right-block .delivery-info
 	ul.product_list.grid .right-block .weight-info {
 		display: none;
+	}
+
+	ul.product_list.grid .right-block .tax-shipping-info.show,
+	ul.product_list.grid .right-block .unit-price.show {
+		display: block;
 	}
 
 	ul.product_list.grid .left-block .tax-shipping-info a {

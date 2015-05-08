@@ -16,13 +16,7 @@ function upgrade_module_1_2_0($eu_legal) {
 		$result &= unlink(_PS_MODULE_DIR_.$eu_legal->name.'/modules/sofortbanking.zip');
 	if(is_file(_PS_MODULE_DIR_.$eu_legal->name.'/modules/trustedshops.zip'))
 		$result &= unlink(_PS_MODULE_DIR_.$eu_legal->name.'/modules/trustedshops.zip');
-	
-	Autoload::getInstance()->generateIndex();
-	
-	$result &= $eu_legal->deleteOverrides('CMSController');
-	
-	Autoload::getInstance()->generateIndex();
-	
+		
 	return (bool)$result;
 	
 }
