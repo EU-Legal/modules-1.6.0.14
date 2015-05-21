@@ -649,9 +649,14 @@ class Cart extends CartCore
 		$context = Context::getContext();
 
 		if (Configuration::get('PS_TAX_ADDRESS_TYPE') == 'id_address_invoice')
-			$address = Address::initialize((int)$this->id_address_invoice);
+			$id_address = (int)$this->id_address_invoice;
 		else
-			$address = Address::initialize((int)$this->id_address_delivery);
+			$id_address = (int)$this->id_address_delivery;
+
+        if (Address::addressExists($id_address))
+            $address = Address::initialize($id_address);
+        else
+            return false;
 
 		if (!count($products))
 			return false;
