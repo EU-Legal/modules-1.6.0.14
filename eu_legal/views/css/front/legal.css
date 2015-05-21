@@ -140,7 +140,7 @@ ul.product_list.list .center-block .delivery-info {
 table#cart_summary {
 	border-width: 5px;
 }
-.shopping-cart-shipping-advice {
+.cart_shipping_info {
   font-size: 0.7em;
   max-width: 200px;
   white-space: normal;
