@@ -1350,7 +1350,7 @@ class EU_Legal extends Module
 		if (empty(self::$_cms_pages))
 		{
 
-			$result = CMS::getCMSPages($this->default_language_id, null, false);
+			$result = CMS::getCMSPages($this->default_language_id, null, false, (int)$this->context->shop->id);
 
 			self::$_cms_pages[] = array('id_cms' => 0, 'name' => $this->l('-- Please select a CMS page --'));
 
