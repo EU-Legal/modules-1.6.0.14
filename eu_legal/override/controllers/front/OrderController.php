@@ -127,7 +127,7 @@ class OrderController extends OrderControllerCore
 					{
 						$order = new Order((int)$id_order);
 						$email = $this->context->customer->email;
-						$this->context->customer->mylogout(); // If guest we clear the cookie for security reason
+						$this->context->customer->mylogout();
 						Tools::redirect('index.php?controller=guest-tracking&id_order='.urlencode($order->reference).'&email='.urlencode($email));
 					}
 					else

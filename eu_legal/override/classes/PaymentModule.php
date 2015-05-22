@@ -392,7 +392,7 @@ class PaymentModule extends PaymentModuleCore
 						if (!$product['is_virtual'])
 							$virtual_product &= false;
 
-					} // end foreach ($products)
+					}
 
 					$product_list_txt = '';
 					$product_list_html = '';
@@ -427,7 +427,7 @@ class PaymentModule extends PaymentModuleCore
 						if (count($order_list) == 1 && $values['tax_incl'] > ($order->total_products_wt - $total_reduction_value_ti) && $cart_rule['obj']->partial_use == 1 && $cart_rule['obj']->reduction_amount > 0)
 						{
 							// Create a new voucher from the original
-							$voucher = new CartRule($cart_rule['obj']->id); // We need to instantiate the CartRule without lang parameter to allow saving it
+							$voucher = new CartRule($cart_rule['obj']->id);
 							unset($voucher->id);
 
 							// Set a new voucher code
@@ -698,7 +698,7 @@ class PaymentModule extends PaymentModuleCore
 					PrestaShopLogger::addLog($error, 4, '0000002', 'Cart', intval($order->id_cart));
 					die($error);
 				}
-			} // End foreach $order_detail_list
+			}
 
 			// Update Order Details Tax in case cart rules have free shipping
 			foreach ($order->getOrderDetailList() as $detail)
