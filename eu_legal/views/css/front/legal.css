@@ -144,6 +144,7 @@ table#cart_summary {
   font-size: 0.7em;
   max-width: 200px;
   white-space: normal;
+  display: inline-block;
 }
 .total_shipping {
 	text-align:right
