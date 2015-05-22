@@ -145,6 +145,9 @@ table#cart_summary {
   max-width: 200px;
   white-space: normal;
 }
+.total_shipping {
+	text-align:right
+}
 /* payment */
 table.payment-summary tbody.active td {
 	background-color: #E8E8E8;
