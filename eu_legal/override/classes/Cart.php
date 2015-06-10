@@ -583,7 +583,7 @@ class Cart extends CartCore
 		if ($with_taxes && $wrapping_fees > 0)
 		{
 			$tax_rate = Cart::getTaxesAverageUsed((int)($this->id));
--			$wrapping_fees = $wrapping_fees * (1 + ($tax_rate / 100));
+			$wrapping_fees = $wrapping_fees * (1 + ($tax_rate / 100));
 		}
 
 		return $wrapping_fees;
