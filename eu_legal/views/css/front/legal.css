@@ -140,7 +140,15 @@ ul.product_list.list .center-block .delivery-info {
 table#cart_summary {
 	border-width: 5px;
 }
-
+.cart_shipping_info {
+  font-size: 0.7em;
+  max-width: 200px;
+  white-space: normal;
+  display: inline-block;
+}
+.total_shipping {
+	text-align:right
+}
 /* payment */
 table.payment-summary tbody.active td {
 	background-color: #E8E8E8;

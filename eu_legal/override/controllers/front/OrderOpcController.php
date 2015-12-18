@@ -173,7 +173,7 @@ class OrderOpcController extends OrderOpcControllerCore
 								$order = new Order((int)$id_order);
 								$email = $this->context->customer->email;
 								if ($this->context->customer->is_guest)
-									$this->context->customer->logout(); // If guest we clear the cookie for security reason
+									$this->context->customer->logout();
 								$this->ajaxDie('freeorder:'.$order->reference.':'.$email);
 							}
 							exit;
@@ -230,7 +230,7 @@ class OrderOpcController extends OrderOpcControllerCore
 									}
 
 									if (!$this->context->cart->isMultiAddressDelivery())
-										$this->context->cart->setNoMultishipping(); // As the cart is no multishipping, set each delivery address lines with the main delivery address
+										$this->context->cart->setNoMultishipping();
 
 									if (!count($this->errors))
 									{

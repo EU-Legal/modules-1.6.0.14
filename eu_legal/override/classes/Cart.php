@@ -71,7 +71,7 @@ class Cart extends CartCore
 
 		$sql->leftJoin('product_supplier', 'ps', 'ps.`id_product` = cp.`id_product` AND ps.`id_product_attribute` = cp.`id_product_attribute` AND ps.`id_supplier` = p.`id_supplier`');
 
-		$sql->leftJoin('specific_price', 'sp', 'sp.`id_product` = cp.`id_product`'); // AND 'sp.`id_shop` = cp.`id_shop`
+		$sql->leftJoin('specific_price', 'sp', 'sp.`id_product` = cp.`id_product`');
 
 		// @todo test if everything is ok, then refactorise call of this method
 		$sql->join(Product::sqlStock('cp', 'cp'));
@@ -365,7 +365,7 @@ class Cart extends CartCore
 		$products_total = array();
 		$ecotax_total = 0;
 
-		foreach ($products as $product) // products refer to the cart details
+		foreach ($products as $product)
 		{
 			if ($virtual_context->shop->id != $product['id_shop'])
 				$virtual_context->shop = new Shop((int)$product['id_shop']);
@@ -373,7 +373,7 @@ class Cart extends CartCore
 			if (Configuration::get('PS_TAX_ADDRESS_TYPE') == 'id_address_invoice')
 				$id_address = (int)$this->id_address_invoice;
 			else
-				$id_address = (int)$product['id_address_delivery']; // Get delivery address of the product from the cart
+				$id_address = (int)$product['id_address_delivery'];
 			if (!Address::addressExists($id_address))
 				$id_address = null;
 
@@ -583,7 +583,7 @@ class Cart extends CartCore
 		if ($with_taxes && $wrapping_fees > 0)
 		{
 			$tax_rate = Cart::getTaxesAverageUsed((int)($this->id));
--			$wrapping_fees = $wrapping_fees * (1 + ($tax_rate / 100));
+			$wrapping_fees = $wrapping_fees * (1 + ($tax_rate / 100));
 		}
 
 		return $wrapping_fees;
@@ -649,9 +649,14 @@ class Cart extends CartCore
 		$context = Context::getContext();
 
 		if (Configuration::get('PS_TAX_ADDRESS_TYPE') == 'id_address_invoice')
-			$address = Address::initialize((int)$this->id_address_invoice);
+			$id_address = (int)$this->id_address_invoice;
 		else
-			$address = Address::initialize((int)$this->id_address_delivery);
+			$id_address = (int)$this->id_address_delivery;
+
+        if (Address::addressExists($id_address))
+            $address = Address::initialize($id_address);
+        else
+            return false;
 
 		if (!count($products))
 			return false;
@@ -770,7 +775,7 @@ class Cart extends CartCore
 		{
 			// Get id zone
 			if (!$this->isMultiAddressDelivery()
-				&& isset($this->id_address_delivery) // Be carefull, id_address_delivery is not usefull one 1.5
+				&& isset($this->id_address_delivery)
 				&& $this->id_address_delivery
 				&& Customer::customerHasAddress($this->id_customer, $this->id_address_delivery
 			))
@@ -936,7 +941,7 @@ class Cart extends CartCore
 			{
 				if ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT)
 					$shipping_cost += $carrier->getDeliveryPriceByWeight($this->getTotalWeight($product_list), $id_zone);
-				else // by price
+				else
 					$shipping_cost += $carrier->getDeliveryPriceByPrice($order_total, $id_zone, (int)$this->id_currency);
 			}
 		}

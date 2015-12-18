@@ -2,8 +2,8 @@
 /**
  * EU Legal - Better security for German and EU merchants.
  *
- * @version   : 1.4.1
- * @date      : 2015 05 07
+ * @version   : 1.4.2
+ * @date      : 2015 05 22
  * @author    : Markus Engel/Chris Gurk @ Onlineshop-Module.de | George June/Alexey Dermenzhy @ Silbersaiten.de
  * @copyright : 2015 Onlineshop-Module.de | 2015 Silbersaiten.de
  * @contact   : info@onlineshop-module.de | info@silbersaiten.de
@@ -56,7 +56,7 @@ class EU_Legal extends Module
 		$this->tab = 'administration';
 
 		// version: major, minor, bugfix
-		$this->version = '1.4.1';
+		$this->version = '1.4.2';
 
 		// author
 		$this->author = 'EU Legal Team';
@@ -1350,7 +1350,7 @@ class EU_Legal extends Module
 		if (empty(self::$_cms_pages))
 		{
 
-			$result = CMS::getCMSPages($this->default_language_id, null, false);
+			$result = CMS::getCMSPages($this->default_language_id, null, false, (int)$this->context->shop->id);
 
 			self::$_cms_pages[] = array('id_cms' => 0, 'name' => $this->l('-- Please select a CMS page --'));
 

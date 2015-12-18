@@ -11,4 +11,4 @@
 * @changelog : see changelog.txt
 * @compatibility : PS == 1.6.0.9
 *}
-{displayPrice price=$shipping_price}<br> {if $no_address_selected}{l s='Shipping to' mod='eu_legal'} {$default_country}{if $shipping_link}<br><a href="{$shipping_link}" class="iframe">{l s='further shipping costs' mod='eu_legal'}</a>{else}<br>{l s='further shipping costs' mod='eu_legal'}{/if}{if $legal_show_deliveryinfo}<br><span class="cart_shipping_info">{l s='The shipping price could change during the checkout process.' mod='eu_legal'}</span>{/if}{/if}
+<span class="price" id="total_shipping">{displayPrice price=$shipping_price}</span><br> {if $no_address_selected}{l s='Shipping to' mod='eu_legal'} {$default_country}{if $shipping_link}<br><a href="{$shipping_link}" class="iframe">{l s='further shipping costs' mod='eu_legal'}</a>{else}<br>{l s='further shipping costs' mod='eu_legal'}{/if}{if $legal_show_deliveryinfo}<br><span class="cart_shipping_info">{l s='The shipping price could change during the checkout process.' mod='eu_legal'}</span>{/if}{/if}

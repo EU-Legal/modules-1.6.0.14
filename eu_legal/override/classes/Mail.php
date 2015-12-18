@@ -23,12 +23,12 @@ class Mail extends MailCore
 		*/
 
 		$additional_cms = array(
-			'conditions' => 'PS_CONDITIONS_CMS_ID', // Legal: Condition
-			'revocation' => 'LEGAL_CMS_ID_REVOCATION', // Legal: Revocation
-			'revocationform' => 'LEGAL_CMS_ID_REVOCATIONFORM', // Legal: Revocation Form
-			'privacy' => 'LEGAL_CMS_ID_PRIVACY', // Legal: Privacy
-			'environmental' => 'LEGAL_CMS_ID_ENVIRONMENTAL', // Legal: Environmental
-			'legal' => 'LEGAL_CMS_ID_LEGAL' // Legal: Imprint
+			'conditions' => 'PS_CONDITIONS_CMS_ID',
+			'revocation' => 'LEGAL_CMS_ID_REVOCATION',
+			'revocationform' => 'LEGAL_CMS_ID_REVOCATIONFORM',
+			'privacy' => 'LEGAL_CMS_ID_PRIVACY',
+			'environmental' => 'LEGAL_CMS_ID_ENVIRONMENTAL',
+			'legal' => 'LEGAL_CMS_ID_LEGAL',
 		);
 
 		$type = Configuration::get('PS_MAIL_TYPE', null, null, $id_shop);
